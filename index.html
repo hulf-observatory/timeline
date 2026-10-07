@@ -1,0 +1,999 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>City Timeline</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='2' y='26' width='96' height='16' rx='6' fill='%23111827'/%3E%3Crect x='2' y='58' width='96' height='16' rx='6' fill='%23111827'/%3E%3Crect x='28' y='2' width='16' height='96' rx='6' transform='rotate(18 36 50)' fill='%23111827'/%3E%3Crect x='56' y='2' width='16' height='96' rx='6' transform='rotate(18 64 50)' fill='%23111827'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="vendor/maplibre-gl.css">
+<style>
+@font-face { font-family: Archivo; src: url(vendor/fonts/archivo-latin.woff2) format('woff2'); font-weight: 100 900; }
+@font-face { font-family: 'Archivo Narrow'; src: url(vendor/fonts/archivo-narrow-latin.woff2) format('woff2'); font-weight: 400 700; }
+@font-face { font-family: Outfit; src: url(vendor/fonts/outfit-latin.woff2) format('woff2'); font-weight: 100 900; }
+:root {
+  --canvas:#EDEEF0; --surface:#FFFFFF; --surface-2:#F3F4F6; --border:#E5E7EB; --border-2:#D1D5DB;
+  --ink:#111827; --text-2:#374151; --muted:#6B7280; --disabled:#9CA3AF;
+  --r-card:12px; --r-ctl:8px; --r-pill:6px;
+  --shadow-card:0 1px 2px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.08);
+  --shadow-btn:0 1px 2px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.08);
+  --shadow-pill:0 1px 2px rgba(0,0,0,.08);
+  --topbar-h:56px; --ctl-h:36px; --gap:12px;
+  --font-ui:Archivo,system-ui,sans-serif; --font-narrow:'Archivo Narrow',Archivo,sans-serif; --font-brand:Outfit,Archivo,sans-serif;
+}
+* { box-sizing:border-box; }
+html,body { margin:0; height:100%; background:var(--canvas); color:var(--ink); font:14px/1.4 var(--font-ui); }
+body { display:flex; flex-direction:column; }
+
+/* top bar */
+/* top bar and brand: same as the Accessibility Atlas */
+.bar { height:var(--topbar-h); flex:none; display:flex; align-items:center; gap:16px; padding:0 20px; margin-bottom:var(--gap);
+  background:var(--surface); border-bottom:1px solid var(--border); position:relative; z-index:30; }
+.brand { display:flex; align-items:center; gap:10px; flex:0 0 auto; }
+.brand-logo { width:28px; height:28px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.brand-logo svg { width:100%; height:100%; display:block; }
+.brand-txt { display:flex; flex-direction:column; align-items:flex-start; line-height:1.1; }
+.brand-wm { color:var(--ink); font:600 17px/1.1 var(--font-narrow); letter-spacing:2px; text-transform:uppercase; white-space:nowrap; }
+.brand-sub { font:600 11px var(--font-narrow); letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); text-decoration:none; white-space:nowrap; }
+.brand-sub:hover { color:var(--ink); }
+.spacer { flex:1; }
+.seg { display:flex; background:var(--surface-2); padding:4px; border-radius:var(--r-ctl); }
+.seg button { border:0; background:none; font:500 12px var(--font-narrow); letter-spacing:.16em; text-transform:uppercase;
+  color:var(--text-2); padding:6px 14px; border-radius:var(--r-pill); cursor:pointer; transition:.12s; }
+.seg button.on { background:var(--surface); color:var(--ink); box-shadow:var(--shadow-pill); }
+.seg button:disabled { color:var(--disabled); cursor:default; }
+.btn { height:var(--ctl-h); display:inline-flex; align-items:center; gap:6px; padding:0 12px; border-radius:var(--r-ctl);
+  border:1px solid var(--border); background:var(--surface); color:var(--ink); font:500 13px var(--font-ui); cursor:pointer; transition:.2s; }
+.btn:hover { background:var(--surface-2); }
+.ctl { position:relative; height:var(--ctl-h); display:flex; flex-direction:column; justify-content:center; padding:0 30px 0 12px;
+  border:1px solid var(--border); border-radius:var(--r-ctl); background:var(--surface); min-width:150px; }
+.ctl .lab { font:600 10px var(--font-narrow); letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); line-height:1; }
+.ctl .val { font:500 13px var(--font-ui); line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ctl::after { content:''; position:absolute; right:12px; top:50%; width:6px; height:6px; margin-top:-5px;
+  border-right:1.5px solid var(--ink); border-bottom:1.5px solid var(--ink); transform:rotate(45deg); pointer-events:none; }
+.ctl.fixed::after { display:none; }
+.ctl select { position:absolute; inset:0; opacity:0; cursor:pointer; font-size:16px; }
+
+/* grid */
+.grid { flex:1; min-height:0; display:grid; gap:var(--gap); padding:0 var(--gap) var(--gap);
+  grid-template-columns:repeat(var(--cols,2),1fr); grid-auto-rows:var(--row,1fr); overflow-y:auto; }
+.pane { position:relative; border-radius:var(--r-card); overflow:hidden; background:var(--surface); box-shadow:var(--shadow-card); min-height:0; }
+/* window title sits in a slim strip above the map, so nothing covers the map */
+.pane { --head-h:30px; }
+.pane .map { position:absolute; left:0; right:0; bottom:0; top:var(--head-h); }
+.pane .head { position:absolute; top:0; left:0; right:0; height:var(--head-h); display:flex; gap:6px; align-items:center; z-index:2;
+  padding:0 6px; background:var(--surface); border-bottom:1px solid var(--border); }
+.pane .head .ctl { height:100%; min-width:0; max-width:100%; flex:0 1 auto; flex-direction:row; align-items:baseline; justify-content:flex-start;
+  gap:6px; padding:0 18px 0 0; border:0; border-radius:0; background:none; line-height:var(--head-h); }
+.pane .head .ctl .lab { flex:none; font-size:10px; letter-spacing:1px; line-height:inherit; }
+.pane .head .ctl .val { font-size:12px; line-height:inherit; color:var(--text-2); }
+.pane .head .ctl::after { right:4px; width:5px; height:5px; margin-top:-4px; }
+.pane .head .ctl.fixed { padding-right:0 !important; }
+.pane .x:hover { background:var(--surface-2); color:var(--ink); }
+.pane .x { width:22px; height:22px; border-radius:50%; border:0; background:none; box-shadow:none;
+  cursor:pointer; flex:none; font:16px var(--font-ui); color:var(--text-2); }
+/* "+" in the title strip: left one adds a year before this window, right one (last window only) after it */
+.pane .ins { position:relative; flex:none; width:22px; height:22px; border-radius:50%; display:none; align-items:center; justify-content:center;
+  border:1px solid var(--border); font:400 15px/1 var(--font-ui); color:var(--text-2); cursor:pointer; transition:.2s; }
+.pane .ins:hover { background:var(--surface-2); color:var(--ink); border-color:var(--border-2); }
+.pane .ins.has { display:flex; }
+.pane .ins select { position:absolute; inset:0; opacity:0; cursor:pointer; font-size:16px; }
+.pane .head .fill { flex:1; }
+.slot { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; min-height:0;
+  border:1.5px dashed var(--border-2); border-radius:var(--r-card); color:var(--muted); cursor:pointer; transition:.2s;
+  font:600 12px var(--font-narrow); letter-spacing:.14em; text-transform:uppercase; }
+.slot span { width:36px; height:36px; border-radius:50%; background:var(--surface); box-shadow:var(--shadow-btn); display:flex;
+  align-items:center; justify-content:center; font:400 20px/1 var(--font-ui); color:var(--ink); letter-spacing:0; }
+.slot:hover { background:rgba(255,255,255,.5); color:var(--ink); }
+.slot select { position:absolute; inset:0; opacity:0; cursor:pointer; font-size:16px; }
+@media (max-width:767px) { .slot { flex:0 0 calc(100% - 56px); scroll-snap-align:center; } }
+.pane .note, .timeview .note { position:absolute; left:0; right:0; top:50%; transform:translateY(-50%); text-align:center; z-index:1; display:none;
+  font:500 13px var(--font-ui); color:var(--text-2); text-shadow:0 0 4px var(--canvas),0 0 8px var(--canvas),0 0 12px var(--canvas); }
+.pane .note button, .timeview .note button { margin-top:8px; }
+.pane.off .note { display:block; }
+.pane .credit { position:absolute; left:10px; bottom:8px; z-index:1; font-size:10px; color:var(--muted);
+  text-shadow:0 0 4px #fff,0 0 8px #fff; max-width:80%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pane .partly, .timeview .partly { position:absolute; right:10px; bottom:8px; z-index:1; display:none; font:600 11px var(--font-narrow); letter-spacing:1.2px;
+  text-transform:uppercase; color:var(--text-2); text-shadow:0 0 4px var(--canvas),0 0 8px var(--canvas),0 0 12px var(--canvas); }
+.pane.part .partly { display:block; }
+.cross { position:absolute; width:22px; height:22px; margin:-11px 0 0 -11px; z-index:1; pointer-events:none; display:none; }
+.cross::before,.cross::after { content:''; position:absolute; background:var(--ink); box-shadow:0 0 0 1px rgba(255,255,255,.8); }
+.cross::before { left:10px; top:0; width:2px; height:22px; } .cross::after { top:10px; left:0; height:2px; width:22px; }
+.maplibregl-ctrl-attrib { display:none; }
+/* "Loading…" while the rasters in view still fetch tiles; a short delay so quick loads never flash it */
+.loading-tag { position:absolute; right:10px; top:calc(var(--head-h, 0px) + 8px); z-index:1; opacity:0; pointer-events:none; transition:opacity .2s;
+  font:600 10px var(--font-narrow); letter-spacing:1.2px; text-transform:uppercase; color:var(--muted);
+  text-shadow:0 0 4px var(--canvas),0 0 8px var(--canvas),0 0 12px var(--canvas); }
+.loading-tag.on { opacity:1; transition-delay:.3s; }
+.timeview .loading-tag { top:12px; left:12px; right:auto; }
+.swipeview .loading-tag { top:auto; bottom:12px; } .swipeview .loading-tag.a { left:12px; right:auto; } .swipeview .loading-tag.b { right:12px; }
+/* ⓘ: the maps in this window with their source, licence and download */
+.inf { width:22px; height:22px; padding:0; border-radius:50%; border:0; background:none; cursor:pointer; flex:none; display:inline-flex;
+  align-items:center; justify-content:center; color:var(--text-2); transition:.2s; }
+.inf:hover, .inf.on { background:var(--surface-2); color:var(--ink); }
+.inf svg { width:14px; height:14px; display:block; }
+.infopop { position:absolute; z-index:4; width:min(300px, calc(100% - 12px)); padding:12px 14px; background:rgba(255,255,255,.96); backdrop-filter:blur(10px);
+  border-radius:var(--r-card); box-shadow:var(--shadow-card); font:13px/1.4 var(--font-ui); color:var(--ink); text-align:left; }
+.infopop[hidden] { display:none; }
+.infopop .ey { font:600 11px var(--font-narrow); letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+.infopop .item + .item { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
+.infopop .item b { display:block; font-weight:600; }
+.infopop .meta { font-size:12px; color:var(--muted); }
+.infopop .meta a { color:var(--text-2); }
+.infopop .dl { display:inline-block; margin-top:6px; font:600 11px var(--font-narrow); letter-spacing:1.2px; text-transform:uppercase; color:var(--ink);
+  text-decoration:none; border-bottom:1px solid var(--ink); }
+.pane .infopop { top:calc(var(--head-h) + 6px); right:6px; }
+.tbar .infopop { bottom:calc(100% + 8px); right:0; }
+.srow { display:flex; align-items:center; gap:6px; max-width:100%; }
+.sside .inf { width:36px; height:36px; background:rgba(255,255,255,.94); backdrop-filter:blur(10px); box-shadow:var(--shadow-btn); }
+.sside .infopop { top:calc(var(--ctl-h) + 6px); } .sside.left .infopop { left:0; } .sside.right .infopop { right:0; }
+/* the catalogue did not load: say so instead of leaving an empty grid */
+.loaderr { position:absolute; left:50%; top:40%; transform:translate(-50%,-50%); z-index:10; width:min(440px, calc(100% - 32px)); padding:18px;
+  background:var(--surface); border-radius:var(--r-card); box-shadow:var(--shadow-card); }
+.loaderr[hidden] { display:none; }
+.loaderr h2 { margin:0 0 6px; font:600 18px/1.3 var(--font-ui); }
+.loaderr p { margin:0 0 10px; font-size:13px; color:var(--text-2); }
+.loaderr code { display:block; margin-bottom:14px; font:12px ui-monospace,'SF Mono',Menlo,monospace; color:var(--muted); word-break:break-all; }
+.loaderr .btn.primary { background:var(--ink); color:#fff; border-color:var(--ink); font-weight:600; }
+.loaderr .btn.primary:hover { background:var(--text-2); }
+
+.dots { display:none; }
+.pills { display:flex; gap:6px; flex:none; }
+.sizer { position:relative; flex:none; }
+.sizer .ctl { min-width:92px; text-align:left; cursor:pointer; font:inherit; }
+.sizepop { position:absolute; top:calc(100% + 6px); left:0; z-index:40; background:rgba(255,255,255,.96); backdrop-filter:blur(10px);
+  border-radius:var(--r-card); box-shadow:var(--shadow-card); padding:12px; }
+.mx { display:grid; grid-template-columns:repeat(5, 26px); gap:4px; }
+.mx i { height:20px; border-radius:4px; background:var(--surface-2); border:1px solid var(--border); cursor:pointer; }
+.mx i.hot { background:var(--ink); border-color:var(--ink); }
+.mx i.cur { box-shadow:0 0 0 2px var(--surface), 0 0 0 3px var(--ink); }
+.mxlab { margin:8px 0 10px; font:600 11px var(--font-narrow); letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); }
+.sizepop .btn { width:100%; justify-content:center; }
+.pills button, .seg button { white-space:nowrap; }
+.seg { flex:none; }
+.pills button { height:30px; padding:0 14px; border-radius:999px; border:1px solid var(--border-2); background:var(--surface);
+  font:600 11px var(--font-narrow); letter-spacing:.14em; text-transform:uppercase; color:var(--text-2); cursor:pointer; transition:.2s; }
+.pills button:hover { background:var(--surface-2); }
+.pills button.on { background:var(--ink); border-color:var(--ink); color:#fff; }
+.stage { position:relative; flex:1; min-width:0; min-height:0; display:flex; flex-direction:column; }
+.edge { display:none; position:absolute; top:50%; margin-top:-20px; width:40px; height:40px; border-radius:50%; border:0; z-index:6;
+  background:rgba(255,255,255,.94); backdrop-filter:blur(10px); box-shadow:var(--shadow-btn); font:20px/1 var(--font-ui); color:var(--ink); cursor:pointer; }
+.edge:hover { background:var(--surface-2); }
+.edge.prev { left:4px; } .edge.next { right:4px; }
+body.lay-row .edge.show { display:block; }
+/* fit: every window on one screen */
+body.lay-fit .grid { overflow:hidden; grid-auto-rows:1fr; }
+/* scroll: two rows per screen, page scrolls; maps need ctrl/⌘ + wheel to zoom */
+body.lay-scroll .grid { overflow-y:auto; }
+/* row: one row of windows, scroll sideways along the timeline */
+body.lay-row .grid { grid-auto-flow:column; grid-template-columns:none; grid-template-rows:1fr;
+  grid-auto-columns:var(--colw, calc((100% - 2 * var(--gap)) / 3)); overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; }
+body.lay-row .grid { scroll-snap-type:x proximity; scroll-padding:0 var(--gap); }
+body.lay-row .pane { scroll-snap-align:start; }
+@media (max-width:767px) {
+  .bar { padding:0 16px; gap:12px; overflow:hidden; } .brand-wm { font-size:15px; } .brand-sub { display:none; } .bar .desk { display:none; }
+  .seg button { padding:6px 10px; letter-spacing:.1em; } .seg .long { display:none; }
+  body { overflow:hidden; }
+  body .grid { display:flex; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; gap:10px; padding:0 28px 8px;
+    scrollbar-width:none; }
+  .seg, .edge { display:none !important; }
+  .grid::-webkit-scrollbar { display:none; }
+  /* the window in focus sits in the centre; its neighbours peek on both sides and a tap brings them in */
+  .pane { flex:0 0 calc(100% - 56px); scroll-snap-align:center; }
+  .pane.away::after { content:''; position:absolute; inset:0; z-index:5; background:rgba(237,238,240,.45); cursor:pointer; }
+  /* year slider along the bottom: one stop per window, drag or tap to move through the timeline */
+  .dots { display:flex; flex:none; position:relative; margin:2px 16px 10px; height:40px; touch-action:none; user-select:none; }
+  .dots::before { content:''; position:absolute; left:0; right:0; top:13px; height:2px; border-radius:1px; background:var(--border); }
+  .dots i { flex:1; position:relative; display:flex; flex-direction:column; align-items:center; gap:6px; font:600 10px var(--font-narrow);
+    font-style:normal; letter-spacing:.06em; color:var(--muted); cursor:pointer; }
+  .dots i::before { content:''; flex:none; box-sizing:border-box; width:8px; height:8px; margin-top:10px; border-radius:50%; background:var(--surface); border:1.5px solid var(--border-2); transition:.2s; }
+  .dots i.on { color:var(--ink); }
+  .dots i.on::before { width:14px; height:14px; margin-top:7px; background:var(--ink); border-color:var(--ink); }
+}
+@media (prefers-reduced-motion:reduce) { * { transition:none !important; scroll-behavior:auto !important; } }
+.main { flex:1; min-height:0; display:flex; }
+.side { flex:0 0 272px; min-height:0; display:flex; flex-direction:column; background:var(--surface); border-radius:var(--r-card);
+  box-shadow:var(--shadow-card); margin:0 0 var(--gap) var(--gap); overflow:hidden; }
+.view { flex:1; min-height:0; display:flex; flex-direction:column; }
+.view[hidden] { display:none; }
+.side-head { flex:none; display:flex; align-items:center; gap:4px; padding:12px 6px 0 12px; }
+.tabs { flex:1; display:flex; background:var(--surface-2); padding:4px; border-radius:var(--r-ctl); }
+.iconbtn { width:28px; height:28px; padding:0; border:0; background:transparent; cursor:pointer; border-radius:var(--r-pill);
+  color:var(--muted); display:inline-flex; align-items:center; justify-content:center; line-height:1; flex:none; font-size:16px; }
+.iconbtn:hover { background:var(--surface-2); color:var(--ink); }
+/* collapsed panel keeps its full height as a slim rail (same as the maps viewer) */
+.rail-labels { display:none; }
+.side.rail { flex-basis:44px; }
+.side.rail > *:not(.rail-labels) { display:none !important; }
+.side.rail .rail-labels { display:flex; flex-direction:column; flex:1; }
+.rail-labels button { border:0; background:transparent; cursor:pointer; writing-mode:vertical-rl; padding:14px 0; width:100%;
+  font:600 12px var(--font-narrow); text-transform:uppercase; letter-spacing:1.5px; color:var(--text-2); }
+.rail-labels button:hover { background:var(--surface-2); color:var(--ink); }
+.tabs button { flex:1; border:0; background:none; font:500 12px var(--font-narrow); letter-spacing:.16em; text-transform:uppercase;
+  color:var(--text-2); padding:6px 0; border-radius:var(--r-pill); cursor:pointer; transition:.12s; }
+.tabs button.on { background:var(--surface); color:var(--ink); box-shadow:var(--shadow-pill); }
+.side[hidden] { display:none; }
+.side-body { flex:1; overflow:auto; padding:4px 8px 12px; }
+.side .eyebrow { display:flex; justify-content:space-between; padding:14px 8px 6px; font:600 12px var(--font-narrow); letter-spacing:1.5px;
+  text-transform:uppercase; color:var(--muted); }
+.side .sub { padding:10px 8px 4px; font:600 10px var(--font-narrow); letter-spacing:1.2px; text-transform:uppercase; color:var(--disabled); }
+.row { display:flex; width:100%; align-items:center; gap:10px; border:0; background:none; text-align:left; padding:7px 8px;
+  border-radius:var(--r-ctl); font:500 13px/1.25 var(--font-ui); color:var(--ink); cursor:pointer; }
+.row:hover { background:var(--surface-2); }
+.row.on { background:var(--surface-2); box-shadow:inset 3px 0 0 var(--ink); }
+.row .t { flex:1; min-width:0; }
+.row small { display:block; font:400 11px var(--font-ui); color:var(--muted); }
+.row .k { flex:none; font:600 10px var(--font-narrow); letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); }
+.row .box { flex:none; width:16px; height:16px; border-radius:4px; border:1.5px solid var(--border-2); display:flex; align-items:center; justify-content:center; }
+.row.shown .box { background:var(--ink); border-color:var(--ink); }
+.row.shown .box::after { content:''; width:8px; height:4px; border-left:2px solid #fff; border-bottom:2px solid #fff; transform:rotate(-45deg) translate(1px,-1px); }
+.row.locked { cursor:default; } .row.locked .box { opacity:.4; }
+.row.locked:hover { background:none; }
+.empty { padding:8px; color:var(--muted); font-size:13px; }
+.search { position:relative; padding:12px 12px 4px; }
+.search input { width:100%; height:var(--ctl-h); border:1px solid var(--border); border-radius:var(--r-ctl); background:var(--surface);
+  padding:0 12px 0 34px; font:500 13px var(--font-ui); color:var(--ink); outline:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:11px center; }
+.search input:focus { border-color:var(--border-2); box-shadow:var(--shadow-btn); }
+.pin { width:12px; height:12px; border-radius:50%; background:#D85A30; border:2px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,.35); }
+/* place search results (place-search.js, the same module as the maps viewer and the Accessibility Atlas) */
+.ps-list { list-style:none; margin:0; padding:0; }
+.ps-item { display:flex; align-items:center; gap:10px; padding:7px 8px; border-radius:var(--r-ctl); font:500 13px/1.25 var(--font-ui);
+  color:var(--ink); cursor:pointer; }
+.ps-item.ps-active { background:var(--surface-2); }
+.ps-item.ps-chosen { background:var(--surface-2); box-shadow:inset 3px 0 0 var(--ink); }
+.ps-text { flex:1; min-width:0; display:flex; flex-direction:column; }
+.ps-ctx { font:400 11px var(--font-ui); color:var(--muted); }
+.ps-kind { flex:none; font:600 10px var(--font-narrow); letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); }
+.ps-status { margin:4px 8px; font-size:13px; color:var(--muted); }
+.ps-credit { margin:8px 8px 0; padding-top:6px; border-top:1px solid var(--border); font-size:11px; color:var(--muted); }
+.grip { display:none; }
+.phmodes { display:none; }
+/* ---- time slider mode: one map, a year slider floating at the bottom */
+html[data-mode=time] .grid, html[data-mode=time] .edge, html[data-mode=time] .sizer, html[data-mode=time] .pills,
+html[data-mode=swipe] .grid, html[data-mode=swipe] .edge, html[data-mode=swipe] .sizer, html[data-mode=swipe] .pills { display:none !important; }
+.play { width:34px; height:34px; border-radius:50%; border:0; background:var(--ink); color:#fff; cursor:pointer; display:inline-flex;
+  align-items:center; justify-content:center; margin-right:6px; transition:.2s; }
+.play:hover { background:var(--text-2); }
+.play .i-pause { display:none; } .play.on .i-pause { display:inline; } .play.on .i-play { display:none; }
+/* ---- map slider mode: two years on one map, split by a divider you drag */
+.swipeview { position:absolute; top:0; left:var(--gap); right:var(--gap); bottom:var(--gap); border-radius:var(--r-card); overflow:hidden;
+  background:var(--surface); box-shadow:var(--shadow-card); --x:50%; }
+.swipeview[hidden] { display:none; }
+.smap { position:absolute; inset:0; }
+#smapB { clip-path:inset(0 0 0 var(--x)); }
+.sdiv { position:absolute; top:0; bottom:0; left:var(--x); width:0; z-index:5; }
+.sdiv::before { content:''; position:absolute; top:0; bottom:0; left:-1px; width:2px; background:#fff; box-shadow:0 0 0 1px rgba(17,24,39,.25); }
+.sdiv .knob { position:absolute; top:50%; left:0; transform:translate(-50%,-50%); width:40px; height:40px; border-radius:50%; background:var(--surface);
+  box-shadow:var(--shadow-btn); display:flex; align-items:center; justify-content:center; font:500 14px var(--font-ui); letter-spacing:2px;
+  color:var(--ink); cursor:ew-resize; touch-action:none; user-select:none; }
+.sside { position:absolute; top:12px; z-index:6; display:flex; flex-direction:column; gap:6px; max-width:calc(50% - 40px); }
+.sside.left { left:12px; align-items:flex-start; } .sside.right { right:12px; align-items:flex-end; }
+.sside .ctl { box-shadow:var(--shadow-btn); border-color:transparent; background:rgba(255,255,255,.94); backdrop-filter:blur(10px); min-width:0; max-width:100%; }
+.sflag { font:600 11px var(--font-narrow); letter-spacing:1.2px; text-transform:uppercase; color:var(--text-2);
+  text-shadow:0 0 4px var(--canvas),0 0 8px var(--canvas),0 0 12px var(--canvas); }
+.timeview { position:absolute; top:0; left:var(--gap); right:var(--gap); bottom:var(--gap); border-radius:var(--r-card); overflow:hidden;
+  background:var(--surface); box-shadow:var(--shadow-card); }
+.timeview[hidden] { display:none; }
+#tmap { position:absolute; inset:0; }
+.timeview .note, .timeview .partly { display:none; }
+.timeview.off .note { display:block; } .timeview.part .partly { display:block; top:12px; bottom:auto; }
+.tbar { position:absolute; left:50%; bottom:16px; transform:translateX(-50%); width:min(880px, calc(100% - 32px)); z-index:6;
+  background:rgba(255,255,255,.94); backdrop-filter:blur(12px); border-radius:16px; box-shadow:var(--shadow-card); padding:12px 18px 10px; }
+.tnow { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.tnow .lab { display:block; font:600 11px var(--font-narrow); letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); }
+.tnow .val { display:block; font:600 18px/1.25 var(--font-ui); }
+.tnav { display:flex; gap:2px; } .tnav .iconbtn { font-size:20px; width:32px; height:32px; }
+.ttrack { position:relative; margin-top:8px; height:42px; cursor:pointer; touch-action:none; user-select:none; }
+.tline { position:absolute; left:0; right:0; top:11px; height:3px; border-radius:2px; background:var(--border); }
+.tfill { height:100%; border-radius:2px; background:var(--ink); width:0; transition:width .2s; }
+.tstops { position:absolute; inset:0; display:flex; }
+.tstops button { flex:1; border:0; background:none; padding:0; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:7px;
+  font:600 11px var(--font-narrow); letter-spacing:.06em; color:var(--muted); }
+.tstops button::before { content:''; flex:none; box-sizing:border-box; width:11px; height:11px; margin-top:7px; border-radius:50%;
+  background:var(--surface); border:2px solid var(--border-2); transition:.2s; }
+.tstops button.past::before { border-color:var(--ink); }
+.tstops button.on { color:var(--ink); }
+.tstops button.on::before { width:17px; height:17px; margin-top:4px; background:var(--ink); border-color:var(--ink); box-shadow:0 0 0 3px var(--surface); }
+/* phone: the side panel becomes a bottom sheet; the grip and the Places / Layers tabs stay in view */
+@media (max-width:767px) {
+  body { padding-bottom:70px; }
+  #places { display:flex !important; position:fixed; left:0; right:0; bottom:0; z-index:50; margin:0; height:72vh;
+    border-radius:20px 20px 0 0; box-shadow:0 -8px 32px rgba(0,0,0,.12);
+    transform:translateY(calc(72vh - 70px)); transition:transform .25s cubic-bezier(.4,0,.2,1); }
+  #places.open { transform:none; }
+  .grip { display:block; flex:none; width:100%; height:22px; border:0; background:none; cursor:pointer; position:relative; touch-action:none; }
+  .grip::after { content:''; position:absolute; left:50%; top:10px; width:36px; height:4px; margin-left:-18px; border-radius:2px; background:var(--border-2); }
+  #places .side-head { padding:0 16px 12px; }
+  /* phone modes: Swipe (window carousel) / Compare (map slider) */
+  .phmodes { display:flex; margin-left:auto; background:var(--surface-2); padding:3px; border-radius:var(--r-ctl); flex:none; }
+  .phmodes button { border:0; background:none; font:600 11px var(--font-narrow); letter-spacing:.12em; text-transform:uppercase;
+    color:var(--text-2); padding:6px 10px; border-radius:var(--r-pill); cursor:pointer; }
+  .phmodes button.on { background:var(--surface); color:var(--ink); box-shadow:var(--shadow-pill); }
+  html[data-mode=swipe] .dots { display:none; }
+  /* compare on phone: both year pickers in a strip above the map, divider below it */
+  .swipeview { left:16px; right:16px; --strip:46px; }
+  .swipeview .smap, .swipeview .sdiv { top:var(--strip); }
+  .swipeview .sside { top:0; height:var(--strip); justify-content:center; max-width:calc(50% - 14px); }
+  .swipeview .sside.left { left:8px; } .swipeview .sside.right { right:8px; }
+  .swipeview .sside .ctl { box-shadow:none; background:none; backdrop-filter:none; padding-left:4px; }
+  .swipeview .sside .inf { width:28px; height:28px; box-shadow:none; background:none; backdrop-filter:none; }
+  .swipeview .sflag { position:absolute; top:calc(var(--strip) + 8px); white-space:nowrap; }
+  .swipeview .sside.right .sflag { right:0; } .swipeview .sside.left .sflag { left:4px; }
+  .sdiv .knob { width:44px; height:44px; }
+  .rail-toggle { display:none; }
+  #places .search { padding:0 16px 12px; }
+  #places .side-body { padding:0 12px 16px; }
+}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="brand">
+    <a class="brand-logo" href="https://hyderabad.urbanobservatory.in" target="_blank" rel="noopener" title="Hyderabad Urban Observatory">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><defs><rect id="bH1" x="2" y="26" width="96" height="16" rx="6"/><rect id="bH2" x="2" y="58" width="96" height="16" rx="6"/><rect id="bV1" x="28" y="2" width="16" height="96" rx="6" transform="rotate(18 36 50)"/><rect id="bV2" x="56" y="2" width="16" height="96" rx="6" transform="rotate(18 64 50)"/><mask id="cH1"><rect width="100" height="100" fill="white"/><use href="#bV1" fill="black" stroke="black" stroke-width="4"/></mask><mask id="cV2"><rect width="100" height="100" fill="white"/><use href="#bH1" fill="black" stroke="black" stroke-width="4"/></mask><mask id="cH2"><rect width="100" height="100" fill="white"/><use href="#bV2" fill="black" stroke="black" stroke-width="4"/></mask><mask id="cV1"><rect width="100" height="100" fill="white"/><use href="#bH2" fill="black" stroke="black" stroke-width="4"/></mask></defs><g fill="#FFFFFF" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#bH1" mask="url(#cH1)"/><use href="#bV2" mask="url(#cV2)"/><use href="#bH2" mask="url(#cH2)"/><use href="#bV1" mask="url(#cV1)"/></g></svg>
+    </a>
+    <span class="brand-txt">
+      <span class="brand-wm">City Timeline</span>
+      <a class="brand-sub" href="https://hyderabad.urbanobservatory.in" target="_blank" rel="noopener">Hyderabad Urban Observatory</a>
+    </span>
+  </div>
+  <div class="spacer"></div>
+  <div class="sizer desk" id="sizer"><button class="ctl" id="sizeBtn" type="button"><span class="lab">Grid</span><span class="val" id="sizeVal">Auto</span></button>
+    <div class="sizepop" id="sizepop" hidden><div class="mx" id="mx"></div><div class="mxlab" id="mxlab">Columns × rows per screen</div>
+      <button class="btn" id="sizeAuto" type="button">Auto · fit all</button></div></div>
+  <div class="pills desk" id="lay" role="radiogroup" aria-label="Layout">
+    <button data-v="fit" title="Every window on one screen">Fit all</button>
+    <button data-v="scroll" class="on" title="Two rows per screen; wheel scrolls, ctrl/⌘ + wheel zooms">Scroll down</button>
+    <button data-v="row" title="One row; wheel or ‹ › moves along the timeline, ctrl/⌘ + wheel zooms">Row</button></div>
+  <div class="phmodes" id="phmodes"><button data-mode="grid" class="on">Swipe</button><button data-mode="swipe">Compare</button></div>
+  <div class="seg" id="modes"><button class="on" data-mode="grid">Grid</button><button data-mode="time">Time<span class="long"> slider</span></button><button data-mode="swipe">Map<span class="long"> slider</span></button></div>
+</div>
+<div class="main">
+<aside class="side" id="places">
+  <button class="grip" id="grip" type="button" aria-label="Open or close the panel"></button>
+  <div class="side-head">
+    <div class="tabs" id="tabs" role="tablist"><button data-tab="viewPlaces" class="on" role="tab">Places</button><button data-tab="viewLayers" role="tab">Layers</button></div>
+    <button class="iconbtn rail-toggle" id="railHide" type="button" title="Hide panel" aria-label="Hide panel">‹</button></div>
+  <div class="view" id="viewPlaces">
+    <div class="search"><input type="search" id="q" placeholder="Search a place or building" autocomplete="off" aria-label="Search a place or building"></div>
+    <div class="side-body" id="placeList"><div id="placeHitsWrap" hidden><div class="eyebrow"><span>Areas and places</span></div>
+      <div id="placeHits"></div></div><div id="heritageList"></div></div></div>
+  <div class="view" id="viewLayers" hidden><div class="side-body" id="layerList"></div></div>
+  <div class="rail-labels"><button data-tab="viewPlaces" title="Show places">Places</button><button data-tab="viewLayers" title="Show layers">Layers</button></div>
+</aside>
+<div class="stage"><div class="grid" id="grid"></div>
+  <div class="loaderr" id="loadErr" hidden role="alert"><h2></h2><p></p><code></code>
+    <button class="btn primary" type="button" onclick="location.reload()">Try again</button></div>
+  <button class="edge prev" id="prev" title="Earlier">‹</button><button class="edge next" id="next" title="Later">›</button>
+  <div class="timeview" id="timeView" hidden>
+    <div id="tmap"></div>
+    <div class="note" id="tnote">Outside this year's extent<br><button class="btn" id="tgo">Go to its area</button></div>
+    <div class="partly" id="tpart">Partly outside extent</div>
+    <div class="loading-tag" id="tload">Loading…</div>
+    <div class="tbar">
+      <div class="tnow"><div><span class="lab" id="tlab"></span><span class="val" id="tval"></span></div>
+        <div class="tnav"><button class="play" id="tplay" type="button" title="Play through the years (space)" aria-label="Play">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path class="i-play" d="M7 4.5v15l12.5-7.5z" fill="currentColor"/><g class="i-pause" fill="currentColor"><rect x="6" y="4.5" width="4" height="15" rx="1"/><rect x="14" y="4.5" width="4" height="15" rx="1"/></g></svg></button>
+          <button class="iconbtn" id="tprev" title="Earlier (←)">‹</button><button class="iconbtn" id="tnext" title="Later (→)">›</button>
+          <button class="iconbtn inf" id="tinf" type="button" title="About this map" aria-label="About this map"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 10.6v6M12 7.4v.3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button></div></div>
+      <div class="infopop" id="tinfo" hidden></div>
+      <div class="ttrack" id="ttrack"><div class="tline"><div class="tfill" id="tfill"></div></div><div class="tstops" id="tstops"></div></div>
+    </div>
+  </div>
+  <div class="swipeview" id="swipeView" hidden>
+    <div class="smap" id="smapA"></div><div class="smap" id="smapB"></div>
+    <div class="sdiv" id="sdiv"><span class="knob" title="Drag to compare">‹ ›</span></div>
+    <div class="sside left"><div class="srow"><label class="ctl"><span class="lab" id="slabA"></span><span class="val" id="svalA"></span><select id="sselA"></select></label>
+        <button class="inf" id="sinfA" type="button" title="About this map" aria-label="About this map"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 10.6v6M12 7.4v.3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button></div>
+      <span class="sflag" id="sflagA"></span><div class="infopop" id="sinfoA" hidden></div></div>
+    <div class="sside right"><div class="srow"><label class="ctl"><span class="lab" id="slabB"></span><span class="val" id="svalB"></span><select id="sselB"></select></label>
+        <button class="inf" id="sinfB" type="button" title="About this map" aria-label="About this map"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 10.6v6M12 7.4v.3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button></div>
+      <span class="sflag" id="sflagB"></span><div class="infopop" id="sinfoB" hidden></div></div>
+    <div class="loading-tag a" id="sloadA">Loading…</div><div class="loading-tag b" id="sloadB">Loading…</div>
+  </div></div>
+</div>
+<div class="dots" id="dots"></div>
+
+<script src="vendor/maplibre-gl.js"></script>
+<script>
+const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/';
+const GREY = ESRI + 'Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}';
+const GREY_LABELS = ESRI + 'Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}';
+const START_VIEW = { c:[78.4735,17.4260], z:12.1 };   // Hussain Sagar
+const START_BOUNDS = [[78.4448,17.4080],[78.5022,17.4440]];   // the start frame: the whole lake with a margin, fitted to the window size
+// Data comes from the open-data site (observatory-work/notes/open-data-scheme.md): layers.json, nav/areas.json
+// and heritage.json are fetched from DATA_BASE with absolute URLs, so the page works from any host.
+// ?data=http://127.0.0.1:8130/test/ points it at another catalogue (local testing).
+const DATA_BASE = (() => {
+  const d = new URLSearchParams(location.search).get('data');
+  return d ? new URL(d.endsWith('/') ? d : d + '/', location.href).href : 'https://hulf-observatory.github.io/hyderabad-data/';
+})();
+const dataUrl = path => new URL(path, DATA_BASE).href;
+// raster layers carry an absolute tile_url (the Worker, release-versioned: no ?v= appended)
+const tileUrl = l => l.tile_url;
+const KIND = { archive_maps:'Historic map', archive_imagery:'Satellite image', toposheets:'Toposheet', landuse:'Proposed land use' };
+const FIXED = [
+  { key:'map', year:9998, lab:'Today', t:'Basemap', tiles:[GREY, GREY_LABELS], credit:'Esri World Light Gray Canvas' },
+  { key:'sat', year:9999, lab:'Today', t:'Satellite', tiles:[ESRI+'World_Imagery/MapServer/tile/{z}/{y}/{x}'], credit:'Esri World Imagery — Esri, Maxar, Earthstar Geographics' },
+];
+const LAUNCH_SKIP = [1911, 1954, 1956, 2031];   // not on the grid at launch; listed under "Not shown" in Layers
+const SKIP_YEARS = [1854];
+const SKIP_LAYERS = ['map_1954_ne44_city_detail'];
+
+let YEARS = {}, panes = [], syncing = false;
+const grid = document.getElementById('grid'), dots = document.getElementById('dots');
+
+// ---- geometry helpers (bbox arrays [w,s,e,n])
+const areaOf = b => Math.max(0, b[2]-b[0]) * Math.max(0, b[3]-b[1]);
+const inter = (a,b) => [Math.max(a[0],b[0]), Math.max(a[1],b[1]), Math.min(a[2],b[2]), Math.min(a[3],b[3])];
+const frameOf = map => { const v = map.getBounds(); return [v.getWest(), v.getSouth(), v.getEast(), v.getNorth()]; };
+
+// Pick what to show for a year in this frame: the map covering most of the frame
+// (ties → the more detailed, smaller one). Sheets that sit beside it (no real overlap) join it;
+// sheets that overlap it are left out, so maps are never stacked.
+function pick(year, frame) {
+  const fa = areaOf(frame);
+  const scored = YEARS[year].layers.map(l => ({ l, f: areaOf(inter(l.bounds, frame)) / fa, a: areaOf(l.bounds) }))
+    .filter(x => x.f > 0)
+    .sort((x,y) => (Math.abs(x.f - y.f) > .02 ? y.f - x.f : x.a - y.a));
+  const chosen = [];
+  for (const s of scored) {
+    const clash = chosen.some(c => areaOf(inter(c.l.bounds, s.l.bounds)) > .2 * Math.min(c.a, s.a));
+    if (!clash) chosen.push(s);
+  }
+  const covered = chosen.reduce((t,c) => t + c.f, 0);
+  return { layers: chosen.map(c => c.l), status: !chosen.length ? 'none' : covered > .98 ? 'full' : 'part' };
+}
+
+function styleFor(entry) {
+  const sources = { base:{ type:'raster', tiles:[GREY], tileSize:256, maxzoom:16 } };
+  const layers = [{ id:'base', type:'raster', source:'base' }];
+  if (entry.fixed) {
+    entry.fixed.tiles.forEach((u,i) => { sources['f'+i] = { type:'raster', tiles:[u], tileSize:256, maxzoom:u.includes('Imagery') ? 19 : 16 }; layers.push({ id:'f'+i, type:'raster', source:'f'+i }); });
+  } else for (const l of YEARS[entry.year].layers) {
+    sources[l.id] = { type:'raster', tiles:[tileUrl(l)], tileSize:l.tile_size||512, minzoom:l.minzoom, maxzoom:l.maxzoom, bounds:l.bounds };
+    layers.push({ id:l.id, type:'raster', source:l.id, layout:{ visibility:'none' }, paint:{ 'raster-fade-duration':150 } });
+  }
+  return { version:8, sources, layers };
+}
+
+// "Loading…" while any raster in view is still fetching tiles: checked on sourcedata / dataloading with
+// isSourceLoaded, cleared when the map goes idle. ids() = the sources that matter for this window.
+function trackLoading(map, tag, ids) {
+  const check = () => {
+    let busy = false;
+    for (const id of ids()) if (map.getSource(id) && !map.isSourceLoaded(id)) { busy = true; break; }
+    tag.classList.toggle('on', busy);
+  };
+  map.on('sourcedata', check); map.on('dataloading', check);
+  map.on('idle', () => tag.classList.remove('on'));
+  return check;
+}
+// ⓘ popover: what is in the window, where it came from, its licence and the PMTiles download
+function infoFor(entry, shown) {
+  if (entry.fixed) return { ey:'Always on', items:[{ title:`${entry.fixed.lab} · ${entry.fixed.t}`, source_name:entry.fixed.credit, source_url:'https://www.esri.com/' }] };
+  const all = YEARS[entry.year].layers;
+  return shown.length ? { ey:`${entry.year} · in this view`, items:shown } : { ey:`${entry.year} · none in this view`, items:all };
+}
+function infoHtml({ ey, items }) {
+  const item = l => {
+    const src = l.source_name ? (l.source_url ? `<a href="${esc(l.source_url)}" target="_blank" rel="noopener">${esc(l.source_name)}</a>` : esc(l.source_name)) : '';
+    const meta = [src, l.date && esc(l.date), l.licence && esc(l.licence)].filter(Boolean).join(' · ');
+    const attr = l.attribution && l.attribution !== l.source_name ? `<div class="meta">${esc(l.attribution)}</div>` : '';
+    const dl = l.download && l.download.pmtiles ? `<a class="dl" href="${esc(l.download.pmtiles)}" rel="noopener">Download · PMTiles</a>` : '';
+    return `<div class="item"><b>${esc(l.title)}</b>${meta ? `<div class="meta">${meta}</div>` : ''}${attr}${dl}</div>`;
+  };
+  return `<div class="ey">${esc(ey)}</div>` + items.map(item).join('');
+}
+function wireInfo(btn, pop, get) {
+  btn.onclick = e => {
+    e.stopPropagation();
+    const open = pop.hidden;
+    closeInfo();
+    if (open) { pop.innerHTML = infoHtml(get()); pop.hidden = false; btn.classList.add('on'); }
+  };
+  pop.addEventListener('click', e => e.stopPropagation());
+}
+function closeInfo() { document.querySelectorAll('.infopop').forEach(x => x.hidden = true); document.querySelectorAll('.inf.on').forEach(x => x.classList.remove('on')); }
+document.addEventListener('click', closeInfo);
+addEventListener('keydown', e => { if (e.key === 'Escape') closeInfo(); });
+
+// at = position in the grid; omitted → the window's place in the timeline
+function addPane(entry, at) {
+  const el = document.createElement('div'); el.className = 'pane';
+  el.innerHTML = `<div class="map"></div>
+    <div class="head"><label class="ins before">+<select></select></label>
+      <label class="ctl"><span class="lab"></span><span class="val"></span><select></select></label><span class="fill"></span>
+      <button class="inf" type="button" title="About this map" aria-label="About this map"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 10.6v6M12 7.4v.3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
+      <label class="ins after">+<select></select></label><button class="x" title="Remove window">×</button></div>
+    <div class="note">Outside this year's extent<br><button class="btn">Go to its area</button></div>
+    <div class="cross"></div><div class="credit"></div><div class="partly">Partly outside extent</div>
+    <div class="loading-tag">Loading…</div><div class="infopop" hidden></div>`;
+  const sel = el.querySelector('.ctl select');
+  if (entry.fixed) { sel.remove(); el.querySelector('.x').remove(); el.querySelector('.ctl').style.paddingRight = '12px'; el.querySelector('.ctl').classList.add('fixed'); }
+  const ref = panes[0]?.map, a = START_VIEW;
+  const map = new maplibregl.Map({ container:el.querySelector('.map'), style:styleFor(entry),
+    center: ref ? ref.getCenter() : a.c, zoom: ref ? ref.getZoom() : a.z, minZoom:8, maxZoom:19,
+    maxBounds:[77.1,15.7,81.5,20.05], dragRotate:false, pitchWithRotate:false, attributionControl:false });
+  map.touchZoomRotate.disableRotation();
+  const p = { el, map, sel, entry, shown:[] };
+  trackLoading(map, el.querySelector('.loading-tag'), () => entry.fixed ? entry.fixed.tiles.map((u,i) => 'f'+i) : p.shown.map(l => l.id));
+  wireInfo(el.querySelector('.inf'), el.querySelector('.infopop'), () => infoFor(entry, p.shown));
+  if (at === undefined) { at = panes.findIndex(q => yearOf(q) > yearOf(p)); if (at < 0) at = panes.length; }
+  panes.splice(at, 0, p);
+
+  p.update = () => {
+    const lab = el.querySelector('.lab'), val = el.querySelector('.val');
+    if (entry.fixed) { lab.textContent = entry.fixed.lab; val.textContent = entry.fixed.t; el.querySelector('.credit').textContent = entry.fixed.credit; return; }
+    const r = pick(entry.year, frameOf(map));
+    p.shown = r.layers;
+    if (map.isStyleLoaded()) {
+      const ids = new Set(r.layers.map(l => l.id));
+      YEARS[entry.year].layers.forEach(l => map.getLayer(l.id) && map.setLayoutProperty(l.id, 'visibility', ids.has(l.id) ? 'visible' : 'none'));
+    }
+    el.classList.toggle('off', r.status === 'none'); el.classList.toggle('part', r.status === 'part');
+    const Y = YEARS[entry.year];
+    lab.textContent = `${entry.year} · ${Y.kind}`;
+    const names = r.layers.map(l => l.title.replace(/^\d{4}\s*/, ''));
+    val.textContent = !names.length ? `${Y.layers.length} ${Y.layers.length > 1 ? 'maps' : 'map'} elsewhere`
+      : names.length === 1 ? names[0] : `${names[0]} + ${names.length - 1} more`;
+    el.querySelector('.credit').textContent = '';
+  };
+  if (pinAt) { const pe = document.createElement('div'); pe.className = 'pin'; p.pin = new maplibregl.Marker({ element:pe }).setLngLat(pinAt).addTo(map); }
+  map.on('load', p.update);
+  map.on('moveend', p.update);
+  if (!entry.fixed) {
+    fillYears(sel, entry.year);
+    sel.onchange = () => { entry.year = +sel.value; map.setStyle(styleFor(entry)); map.once('styledata', p.update); order(); };  // stays where it is
+    el.querySelector('.note button').onclick = () => {
+      const bs = YEARS[entry.year].layers.map(l => l.bounds);
+      const c = map.getCenter(), near = bs.sort((a,b) => dist(a,c) - dist(b,c))[0];
+      map.fitBounds([[near[0],near[1]],[near[2],near[3]]], { padding:30, duration:1600 });
+    };
+    el.querySelector('.x').onclick = () => { panes.splice(panes.indexOf(p),1); map.remove(); el.remove(); order(); };
+  }
+  // move in one → move all
+  map.on('move', () => {
+    if (syncing) return; syncing = true;
+    const c = map.getCenter(), z = map.getZoom();
+    panes.forEach(q => { if (q !== p) q.map.jumpTo({ center:c, zoom:z }); });
+    syncing = false;
+  });
+  map.on('mousemove', e => panes.forEach(q => {
+    const cr = q.el.querySelector('.cross');
+    if (q === p) { cr.style.display = 'none'; return; }
+    const pt = q.map.project(e.lngLat); cr.style.display = 'block'; cr.style.left = pt.x+'px'; cr.style.top = (pt.y + q.map.getContainer().offsetTop)+'px';
+  }));
+  map.getCanvas().addEventListener('mouseleave', () => panes.forEach(q => q.el.querySelector('.cross').style.display='none'));
+  order();
+}
+const dist = (b, c) => Math.hypot((b[0]+b[2])/2 - c.lng, (b[1]+b[3])/2 - c.lat);
+const yearOf = p => p.entry.fixed ? p.entry.fixed.year : p.entry.year;
+
+function fillYears(sel, current) {
+  sel.innerHTML = '';
+  Object.keys(YEARS).map(Number).sort((a,b) => a-b).forEach(y => sel.add(new Option(`${y} · ${YEARS[y].kind}`, y)));
+  sel.value = current;
+}
+// windows keep the order they were placed in; the "+" controls and add slots offer every year not on screen
+function yearOptions(first) {
+  const shown = new Set(panes.map(yearOf));
+  return `<option value="">${first}</option>` + Object.keys(YEARS).map(Number).sort((a,b) => a-b).filter(y => !shown.has(y))
+    .map(y => `<option value="${y}">${y} · ${YEARS[y].kind}</option>`).join('');
+}
+const nameOf = q => q.entry.fixed ? q.entry.fixed.t : q.entry.year;
+function order() {
+  panes.forEach(q => grid.appendChild(q.el));
+  const opts = yearOptions('Add a year here…'), free = /value="\d/.test(opts);
+  panes.forEach((q, i) => {
+    const b = q.el.querySelector('.ins.before'), a = q.el.querySelector('.ins.after');
+    b.classList.toggle('has', free); a.classList.toggle('has', free && i === panes.length - 1);
+    b.title = i ? `Add a year between ${nameOf(panes[i-1])} and ${nameOf(q)}` : `Add a year before ${nameOf(q)}`;
+    a.title = `Add a year after ${nameOf(q)}`;
+    b.querySelector('select').innerHTML = a.querySelector('select').innerHTML = opts;
+    b.querySelector('select').onchange = e => e.target.value && addPane({ year:+e.target.value }, panes.indexOf(q));
+    a.querySelector('select').onchange = e => e.target.value && addPane({ year:+e.target.value }, panes.indexOf(q) + 1);
+  });
+  renderLayers();
+  if (T.map) timeBuild();
+  layout();
+}
+
+const lay = { value:'scroll' };   // launch: 3 × 2 per screen, the rest scroll
+// grid size: columns × rows per screen. Picking one leaves "Fit all" for "Scroll down" (Row uses the columns only)
+let size = { c:3, r:2 };
+const mx = document.getElementById('mx'), pop = document.getElementById('sizepop');
+for (let r = 1; r <= 4; r++) for (let c = 1; c <= 5; c++) { const i = document.createElement('i'); i.dataset.c = c; i.dataset.r = r; mx.appendChild(i); }
+const paint = (c, r) => mx.querySelectorAll('i').forEach(i => {
+  i.classList.toggle('hot', +i.dataset.c <= c && +i.dataset.r <= r);
+  i.classList.toggle('cur', !!size && +i.dataset.c === size.c && +i.dataset.r === size.r);
+});
+mx.onmouseover = e => { const t = e.target.dataset; if (t.c) { paint(+t.c, +t.r); document.getElementById('mxlab').textContent = `${t.c} × ${t.r} per screen`; } };
+mx.onmouseleave = () => { paint(0, 0); document.getElementById('mxlab').textContent = 'Columns × rows per screen'; };
+mx.onclick = e => { const t = e.target.dataset; if (!t.c) return; size = { c:+t.c, r:+t.r }; pop.hidden = true; if (lay.value === 'fit') setMode('scroll'); else layout(); };
+document.getElementById('sizeAuto').onclick = () => { size = null; pop.hidden = true; setMode('fit'); };
+document.getElementById('sizeBtn').onclick = e => { e.stopPropagation(); pop.hidden = !pop.hidden; paint(0, 0); };
+document.addEventListener('click', e => { if (!e.target.closest('#sizer')) pop.hidden = true; });
+function setMode(v) { lay.value = v; document.querySelectorAll('#lay button').forEach(x => x.classList.toggle('on', x.dataset.v === v)); layout(); }
+document.querySelectorAll('#lay button').forEach(b => b.onclick = () => setMode(b.dataset.v));
+document.getElementById('prev').onclick = () => grid.scrollBy({ left:-(panes[0].el.offsetWidth + 12), behavior:'smooth' });
+document.getElementById('next').onclick = () => grid.scrollBy({ left:panes[0].el.offsetWidth + 12, behavior:'smooth' });
+
+function layout() {
+  const n = panes.length, W = grid.clientWidth, H = grid.clientHeight, mode = lay.value;
+  document.body.className = 'lay-' + mode;
+  let cols;
+  if (mode === 'fit') {            // choose the column count that keeps windows closest to 1.4:1, with few empty cells
+    cols = 1; let best = 1e9;
+    for (let c = 1; c <= n; c++) { const r = Math.ceil(n / c), d = Math.abs(Math.log((W / c) / (H / r) / 1.4)) + (c * r - n) * .15; if (d < best) { best = d; cols = c; } }
+  } else if (mode === 'scroll') cols = size ? size.c : n <= 1 ? 1 : innerWidth >= 1280 && n > 4 ? 3 : 2;
+  else cols = size ? size.c : 3;
+  grid.style.setProperty('--cols', cols);
+  // when there is more to scroll, size windows so a strip of the next row / column shows at the edge
+  const PEEK = 64, G = 12;
+  const R = mode === 'scroll' && size ? size.r : 2, more = Math.ceil(n / cols) > R;
+  grid.style.setProperty('--row', mode === 'scroll' && (more || size) ? `${(H - G - (R - 1) * G - (more ? G + PEEK : 0)) / R}px` : '1fr');
+  grid.style.setProperty('--colw', mode === 'row' ? `${(W - 2 * G - (cols - 1) * G - (n > cols ? G + PEEK : 0)) / cols}px` : '1fr');
+  document.getElementById('sizeVal').textContent = mode === 'fit' || !size ? 'Auto' : mode === 'row' ? `${size.c} across` : `${size.c} × ${size.r}`;
+  panes.forEach(q => {
+    // in "scroll down" the wheel scrolls the page; ctrl/⌘ + wheel zooms the map
+    if ((mode === 'scroll' || mode === 'row') && innerWidth >= 768) q.map.cooperativeGestures.enable(); else q.map.cooperativeGestures.disable();
+  });
+  // empty cells become "Add a year" slots (row and phone: one slot at the end)
+  grid.querySelectorAll('.slot').forEach(x => x.remove());
+  const phone = innerWidth < 768, opts = yearOptions('Add a year…');
+  const empty = !/value="\d/.test(opts) ? 0 : phone || mode === 'row' ? 1 : cols * Math.max(Math.ceil(n / cols), mode === 'scroll' && size ? size.r : 0) - n;
+  for (let i = 0; i < empty; i++) {
+    const sl = document.createElement('label'); sl.className = 'slot';
+    sl.innerHTML = `<span>+</span>Add a year<select>${opts}</select>`;
+    sl.querySelector('select').onchange = e => e.target.value && addPane({ year:+e.target.value }, panes.length);
+    grid.appendChild(sl);
+  }
+  dots.innerHTML = panes.map(q => `<i>${q.entry.fixed ? (q.entry.fixed.key === 'sat' ? 'Sat' : 'Map') : q.entry.year}</i>`).join('');
+  requestAnimationFrame(() => { panes.forEach(q => q.map.resize()); markDot(); edges(); });
+}
+// phone: which window is in the centre
+function current() {
+  const mid = grid.scrollLeft + grid.clientWidth / 2;
+  let best = 0, d = 1e9;
+  panes.forEach((q, i) => { const c = q.el.offsetLeft + q.el.offsetWidth / 2, x = Math.abs(c - mid); if (x < d) { d = x; best = i; } });
+  return best;
+}
+function markDot() {
+  if (!isPhone()) return;
+  const i = current();
+  [...dots.children].forEach((d,j) => d.classList.toggle('on', j === i));
+  panes.forEach((q,j) => q.el.classList.toggle('away', j !== i));
+}
+function centre(i, smooth = true) {
+  const el = panes[i]?.el; if (!el) return;
+  grid.scrollTo({ left: el.offsetLeft - (grid.clientWidth - el.offsetWidth) / 2, behavior: smooth ? 'smooth' : 'auto' });
+}
+// tap a peeking window → it slides to the centre (the tap never reaches its map)
+grid.addEventListener('click', e => {
+  const el = e.target.closest('.pane.away'); if (!el || !isPhone()) return;
+  e.stopPropagation(); e.preventDefault(); centre(panes.findIndex(q => q.el === el));
+}, true);
+// slider: tap a year or drag along it
+let sliding = false;
+const stopAt = x => { const r = dots.getBoundingClientRect(); return Math.max(0, Math.min(panes.length - 1, Math.floor((x - r.left) / r.width * panes.length))); };
+dots.addEventListener('pointerdown', e => { sliding = true; dots.setPointerCapture(e.pointerId); centre(stopAt(e.clientX), false); });
+dots.addEventListener('pointermove', e => { if (sliding) centre(stopAt(e.clientX), false); });
+dots.addEventListener('pointerup', e => { sliding = false; centre(stopAt(e.clientX)); });
+// the ‹ › buttons show only when there is more of the row that way
+function edges() {
+  document.getElementById('prev').classList.toggle('show', grid.scrollLeft > 4);
+  document.getElementById('next').classList.toggle('show', grid.scrollLeft + grid.clientWidth < grid.scrollWidth - 4);
+}
+grid.addEventListener('scroll', () => { markDot(); edges(); }, { passive:true });
+grid.addEventListener('wheel', e => {
+  if (lay.value !== 'row' || e.ctrlKey || e.metaKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+  e.preventDefault(); grid.scrollLeft += e.deltaY;
+}, { passive:false });
+addEventListener('resize', layout);
+
+// ---- places panel: search and the heritage buildings list
+// Search is place-search.js (the same module, byte for byte, as the maps viewer and the
+// Accessibility Atlas): the observatory's areas and the heritage list first, then
+// OpenStreetMap places from Photon (only the typed text is sent). While it shows
+// results they replace the heritage list; the searched point is pinned in every window.
+let AREAS_LOCAL = [], HERITAGE = [], pinAt = null, picked = null, PS = null;
+fetch(dataUrl('nav/areas.json')).then(r => r.json()).then(a => {
+  const corps = a.corporations || [], zones = a.zones || [];
+  corps.forEach(c => AREAS_LOCAL.push({ name:c.name, kind:'Corporation', bbox:c.bounds }));
+  zones.forEach(z => AREAS_LOCAL.push({ name:z.name, kind:'Zone', context:(corps[z.corp] || {}).name, bbox:z.bounds }));
+  (a.circles || []).forEach(c => AREAS_LOCAL.push({ name:c.name, kind:'Circle', context:(zones[c.zone] || {}).name, bbox:c.bounds }));
+  (a.wards || []).forEach(w => AREAS_LOCAL.push({ name:w.name, kind:'Ward' + (w.no != null ? ' ' + w.no : ''),
+    context:zones[w.zone] ? zones[w.zone].name + ' zone' : '', bbox:w.bounds }));
+}).catch(() => {});
+fetch(dataUrl('heritage.json')).then(r => r.json()).then(h => {
+  HERITAGE = h.map(x => ({ name:x.name, sub:x.ward, zone:x.zone === 'Null' ? 'Other' : x.zone, kind:'Heritage', point:x.c }));
+  renderPlaces();
+}).catch(() => {});
+const q = document.getElementById('q'), placeList = document.getElementById('placeList');
+const heritageList = document.getElementById('heritageList'), hitsWrap = document.getElementById('placeHitsWrap');
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+const localPlaces = () => AREAS_LOCAL.concat(HERITAGE.map(h => ({ name:h.name, kind:'Heritage', context:h.sub, center:h.point })));
+// the pin goes in every window (drawPins below), not just the map that moved
+const pinMarker = { set:(map, ll) => { pinAt = ll; drawPins(); }, clear:() => { if (pinAt) { pinAt = null; drawPins(); } } };
+function rowFor(h) {
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'row' + (picked === h ? ' on' : '');
+  b.innerHTML = `<span class="t">${esc(h.name)}${h.sub ? `<small>${esc(h.sub)}</small>` : ''}</span>`;
+  b.onclick = () => go(h);
+  return b;
+}
+function section(title, n) { const d = document.createElement('div'); d.className = 'eyebrow'; d.innerHTML = `<span>${title}</span><span>${n}</span>`; return d; }
+function renderPlaces() {
+  const t = q.value.trim().toLowerCase();
+  heritageList.innerHTML = '';
+  const her = HERITAGE.filter(h => !t || h.name.toLowerCase().includes(t) || h.sub.toLowerCase().includes(t));
+  heritageList.append(section('Heritage buildings', her.length));
+  let zone = null;
+  for (const h of her) {
+    if (h.zone !== zone) { zone = h.zone; const z = document.createElement('div'); z.className = 'sub'; z.textContent = zone; heritageList.append(z); }
+    heritageList.append(rowFor(h));
+  }
+}
+q.addEventListener('input', renderPlaces);
+import('./place-search.js').then(m => {
+  PS = m;
+  m.createPlaceSearch({
+    input:q, results:document.getElementById('placeHits'), local:localPlaces, getMap:() => activeMap(),
+    marker:pinMarker, inline:true, padding:40,
+    onToggle:open => { hitsWrap.hidden = !open; heritageList.hidden = open; },
+    onSelect:() => { picked = null; renderPlaces(); if (isPhone()) { setSheet(false); q.blur(); } },
+  });
+}).catch(err => console.warn('place search', err));
+// a row of the heritage list: the same move and pin as a search result
+function go(h) {
+  picked = h; renderPlaces();
+  if (isPhone()) { setSheet(false); q.blur(); }
+  const place = { name:h.name, kind:'Heritage', center:h.point };
+  if (PS) PS.goToPlace(activeMap(), place, { marker:pinMarker });
+  else { activeMap().flyTo({ center:h.point, zoom:15, duration:1200 }); pinMarker.set(null, h.point); }
+}
+
+// ---- phone: the sheet opens on the grip, a swipe up, or a tab; picking a place closes it
+const sheet = document.getElementById('places'), grip = document.getElementById('grip');
+const isPhone = () => innerWidth < 768;
+const setSheet = open => sheet.classList.toggle('open', open);
+let dragY = null, swiped = false;
+grip.onclick = () => { if (swiped) { swiped = false; return; } setSheet(!sheet.classList.contains('open')); };
+grip.addEventListener('pointerdown', e => { dragY = e.clientY; });
+addEventListener('pointerup', e => {
+  if (dragY === null) return; const dy = e.clientY - dragY; dragY = null;
+  swiped = Math.abs(dy) > 30; if (swiped) setSheet(dy < 0);
+});
+q.addEventListener('focus', () => isPhone() && setSheet(true));
+
+// ---- layers panel: years on the grid vs not shown; a click adds or removes the window and the grid re-arranges
+const layerList = document.getElementById('layerList');
+function renderLayers() {
+  const years = Object.keys(YEARS).map(Number).sort((a,b) => a-b);
+  layerList.innerHTML = '';
+  layerList.append(section('Timeline', `${panes.length} on the grid`));
+  const row = (label, kind, on, locked, click, tip) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'row' + (on ? ' shown' : '') + (locked ? ' locked' : '');
+    b.innerHTML = `<span class="box"></span><span class="t">${label}</span><span class="k">${kind}</span>`;
+    b.title = tip; if (click) b.onclick = click;
+    layerList.append(b);
+  };
+  years.forEach(y => {
+    const q = panes.find(p => p.entry.year === y);
+    row(y, YEARS[y].kind, !!q, false, q ? () => q.el.querySelector('.x').click() : () => addPane({ year:y }), q ? 'Remove from the grid' : 'Add to the grid');
+  });
+  FIXED.forEach(f => row(`Today · ${f.t}`, 'Always on', true, true, null, 'Always on the grid'));
+}
+// ‹ collapses the panel to a rail; a rail label opens it again on that tab
+function showTab(id) {
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.tab === id));
+  document.querySelectorAll('.view').forEach(v => v.hidden = v.id !== id);
+}
+document.getElementById('railHide').onclick = () => { sheet.classList.add('rail'); layout(); };
+document.querySelectorAll('.rail-labels button').forEach(b => b.onclick = () => { showTab(b.dataset.tab); sheet.classList.remove('rail'); layout(); });
+addEventListener('resize', () => isPhone() && sheet.classList.remove('rail'));
+// Places / Layers tabs; on the phone a tab tap also opens the sheet
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => { showTab(b.dataset.tab); if (isPhone()) setSheet(true); });
+// the searched point is marked in every window
+function drawPins() {
+  const all = panes.concat(T.map ? [T] : [], S.a ? [{ map:S.a, get pin() { return S.pinA; }, set pin(v) { S.pinA = v; } }, { map:S.b, get pin() { return S.pinB; }, set pin(v) { S.pinB = v; } }] : []);
+  all.forEach(p => { p.pin?.remove(); p.pin = null;
+    if (pinAt) { const el = document.createElement('div'); el.className = 'pin'; p.pin = new maplibregl.Marker({ element:el }).setLngLat(pinAt).addTo(p.map); } });
+}
+
+// ---- time slider mode ------------------------------------------------------------------
+// One map. The slider's stops are the years ticked in Layers (timeline order) plus Today (satellite).
+// Stops are evenly spaced so close years (1974, 1975, 1979) stay readable.
+const T = { map:null, stops:[], i:0, pin:null, shown:[] };
+const timeView = document.getElementById('timeView');
+const activeMap = () => { const v = document.documentElement.dataset.mode; return v === 'time' && T.map ? T.map : v === 'swipe' && S.a ? S.a : panes[0].map; };
+function timeStops() {
+  const ys = panes.filter(q => !q.entry.fixed).map(q => q.entry.year).sort((a,b) => a-b);
+  return ys.map(y => ({ year:y })).concat([{ fixed:FIXED.find(f => f.key === 'sat') }]);
+}
+function timeStyle() {
+  const sources = { base:{ type:'raster', tiles:[GREY], tileSize:256, maxzoom:16 } }, layers = [{ id:'base', type:'raster', source:'base' }];
+  for (const y of Object.keys(YEARS)) for (const l of YEARS[y].layers) {
+    sources[l.id] = { type:'raster', tiles:[tileUrl(l)], tileSize:l.tile_size||512, minzoom:l.minzoom, maxzoom:l.maxzoom, bounds:l.bounds };
+    layers.push({ id:l.id, type:'raster', source:l.id, layout:{ visibility:'none' }, paint:{ 'raster-fade-duration':200 } });
+  }
+  const sat = FIXED.find(f => f.key === 'sat');
+  sources.sat = { type:'raster', tiles:sat.tiles, tileSize:256, maxzoom:19 };
+  layers.push({ id:'sat', type:'raster', source:'sat', layout:{ visibility:'none' } });
+  sources.glab = { type:'raster', tiles:[GREY_LABELS], tileSize:256, maxzoom:16 };
+  layers.push({ id:'glab', type:'raster', source:'glab', layout:{ visibility:'none' } });
+  return { version:8, sources, layers };
+}
+// show one stop (a year, or a Today window) on a map built from timeStyle(); returns what to label it
+function applyStop(m, st) {
+  let ids = new Set(), status = 'full', lab, val, layers = [];
+  if (st.fixed) { ids.add(st.fixed.key === 'sat' ? 'sat' : 'glab'); lab = 'Today'; val = st.fixed.t; }
+  else {
+    const r = pick(st.year, frameOf(m)); r.layers.forEach(l => ids.add(l.id)); status = r.status; layers = r.layers;
+    lab = `${st.year} · ${YEARS[st.year].kind}`;
+    val = r.layers.length ? r.layers.map(l => l.title.replace(/^\d{4}\s*/, ''))[0] + (r.layers.length > 1 ? ` + ${r.layers.length - 1} more` : '') : 'Not in this area';
+  }
+  if (m.isStyleLoaded()) m.getStyle().layers.forEach(l => l.id !== 'base' && m.setLayoutProperty(l.id, 'visibility', ids.has(l.id) ? 'visible' : 'none'));
+  return { status, lab, val, layers, ids:[...ids] };
+}
+function timeShow() {
+  const st = T.stops[T.i], m = T.map; if (!st || !m.isStyleLoaded()) return;
+  const { status, lab, val, ids } = applyStop(m, st);
+  T.shown = ids;
+  timeView.classList.toggle('off', status === 'none'); timeView.classList.toggle('part', status === 'part');
+  document.getElementById('tlab').textContent = lab; document.getElementById('tval').textContent = val;
+  [...document.getElementById('tstops').children].forEach((b, j) => { b.classList.toggle('on', j === T.i); b.classList.toggle('past', j < T.i); });
+  const n = T.stops.length; document.getElementById('tfill').style.width = n > 1 ? `${(T.i + .5) / n * 100}%` : '0';
+}
+function timeSet(i, fromPlay) { if (!fromPlay) stopPlay(); T.i = Math.max(0, Math.min(T.stops.length - 1, i)); timeShow(); }
+// play steps through the stops every 2.5 s and stops at the end; any manual move pauses it
+const PLAY_MS = 2500, playBtn = document.getElementById('tplay'); let playing = null;
+function stopPlay() { clearInterval(playing); playing = null; playBtn.classList.remove('on'); playBtn.setAttribute('aria-label', 'Play'); }
+function startPlay() {
+  if (T.i >= T.stops.length - 1) timeSet(0, true);
+  playBtn.classList.add('on'); playBtn.setAttribute('aria-label', 'Pause');
+  playing = setInterval(() => { if (T.i >= T.stops.length - 1) return stopPlay(); timeSet(T.i + 1, true); }, PLAY_MS);
+}
+playBtn.onclick = () => playing ? stopPlay() : startPlay();
+function timeBuild() {
+  const cur = T.stops[T.i];
+  T.stops = timeStops();
+  const k = cur ? T.stops.findIndex(s => cur.fixed ? s.fixed : s.year === cur.year) : -1;
+  T.i = k >= 0 ? k : 0;
+  document.getElementById('tstops').innerHTML = T.stops.map(s => `<button type="button">${s.fixed ? 'Today' : s.year}</button>`).join('');
+  [...document.getElementById('tstops').children].forEach((b, j) => b.onclick = () => timeSet(j));
+  timeShow();
+}
+function setView(v) {
+  const was = document.documentElement.dataset.mode || 'grid';
+  const from = was === 'time' ? T.map : was === 'swipe' ? S.a : panes[0].map;
+  document.documentElement.dataset.mode = v;
+  document.querySelectorAll('#modes button[data-mode], #phmodes button').forEach(b => b.classList.toggle('on', b.dataset.mode === v));
+  timeView.hidden = v !== 'time'; swipeView.hidden = v !== 'swipe';
+  if (v !== 'time') stopPlay();
+  if (v === 'swipe') return swipeOpen(from);
+  if (v === 'time') {
+    if (!T.map) {
+      T.map = new maplibregl.Map({ container:'tmap', style:timeStyle(), center:from.getCenter(), zoom:from.getZoom(), minZoom:8, maxZoom:19,
+        maxBounds:[77.1,15.7,81.5,20.05], dragRotate:false, pitchWithRotate:false, attributionControl:false });
+      T.map.touchZoomRotate.disableRotation();
+      T.map.on('load', timeShow); T.map.on('moveend', timeShow);
+      trackLoading(T.map, document.getElementById('tload'), () => T.shown);
+      drawPins();
+    } else T.map.jumpTo({ center:from.getCenter(), zoom:from.getZoom() });
+    requestAnimationFrame(() => T.map.resize());
+    timeBuild();
+  } else { panes[0].map.jumpTo({ center:from.getCenter(), zoom:from.getZoom() }); layout(); }
+}
+
+// ---- map slider mode ---------------------------------------------------------------------
+// Left map = one year, right map = another, drawn on top and clipped at the divider. Both move together.
+const S = { a:null, b:null, sa:null, sb:null, pinA:null, pinB:null, shownA:[], shownB:[] };
+const swipeView = document.getElementById('swipeView');
+function swipeChoices() {
+  return Object.keys(YEARS).map(Number).sort((a,b) => a-b).map(y => ({ year:y })).concat(FIXED.map(f => ({ fixed:f })));
+}
+const stopKey = st => st.fixed ? st.fixed.key : String(st.year);
+function swipeShow() {
+  for (const [m, st, k] of [[S.a, S.sa, 'A'], [S.b, S.sb, 'B']]) {
+    if (!m || !st) continue;
+    const r = applyStop(m, st);
+    S['shown' + k] = r.ids;
+    document.getElementById('slab' + k).textContent = r.lab; document.getElementById('sval' + k).textContent = r.val;
+    document.getElementById('sflag' + k).textContent = r.status === 'none' ? 'Outside this year\'s extent' : r.status === 'part' ? 'Partly outside extent' : '';
+  }
+}
+function swipeOpen(from) {
+  const ch = swipeChoices();
+  if (!S.sa) {   // start: earliest year on the grid vs today's satellite
+    const firstYear = panes.find(q => !q.entry.fixed);
+    S.sa = ch.find(c => firstYear && c.year === firstYear.entry.year) || ch[0];
+    S.sb = ch.find(c => c.fixed && c.fixed.key === 'sat');
+  }
+  for (const [sel, key] of [['sselA', 'sa'], ['sselB', 'sb']]) {
+    const el = document.getElementById(sel);
+    el.innerHTML = ch.map(c => `<option value="${stopKey(c)}">${c.fixed ? 'Today · ' + c.fixed.t : c.year + ' · ' + YEARS[c.year].kind}</option>`).join('');
+    el.value = stopKey(S[key]);
+    el.onchange = () => { S[key] = ch.find(c => stopKey(c) === el.value); swipeShow(); };
+  }
+  const opts = { style:timeStyle(), center:from.getCenter(), zoom:from.getZoom(), minZoom:8, maxZoom:19,
+    maxBounds:[77.1,15.7,81.5,20.05], dragRotate:false, pitchWithRotate:false, attributionControl:false };
+  if (!S.a) {
+    S.a = new maplibregl.Map({ container:'smapA', ...opts }); S.b = new maplibregl.Map({ container:'smapB', ...opts });
+    let busy = false;
+    for (const [m, o] of [[S.a, S.b], [S.b, S.a]]) {
+      m.touchZoomRotate.disableRotation();
+      m.on('move', () => { if (busy) return; busy = true; o.jumpTo({ center:m.getCenter(), zoom:m.getZoom() }); busy = false; });
+      m.on('load', swipeShow); m.on('moveend', swipeShow);
+    }
+    trackLoading(S.a, document.getElementById('sloadA'), () => S.shownA); trackLoading(S.b, document.getElementById('sloadB'), () => S.shownB);
+    drawPins();
+  } else S.a.jumpTo({ center:from.getCenter(), zoom:from.getZoom() });
+  requestAnimationFrame(() => { S.a.resize(); S.b.resize(); });
+  swipeShow();
+}
+// drag the divider (or click anywhere on the knob's line)
+const sdiv = document.getElementById('sdiv'); let sdrag = false;
+const setX = x => { const r = swipeView.getBoundingClientRect(); swipeView.style.setProperty('--x', Math.max(0, Math.min(r.width, x - r.left)) + 'px'); };
+sdiv.addEventListener('pointerdown', e => { sdrag = true; sdiv.setPointerCapture(e.pointerId); e.preventDefault(); });
+sdiv.addEventListener('pointermove', e => { if (sdrag) setX(e.clientX); });
+sdiv.addEventListener('pointerup', () => { sdrag = false; });
+document.querySelectorAll('#modes button[data-mode], #phmodes button').forEach(b => b.onclick = () => setView(b.dataset.mode));
+// the phone has no Time slider view; fall back to the carousel if the window shrinks while in it
+addEventListener('resize', () => { if (isPhone() && document.documentElement.dataset.mode === 'time') setView('grid'); });
+const stopInfo = st => st.fixed ? infoFor({ fixed:st.fixed }, []) : infoFor({ year:st.year }, YEARS[st.year].layers.filter(l => T.shown.includes(l.id)));
+wireInfo(document.getElementById('tinf'), document.getElementById('tinfo'), () => stopInfo(T.stops[T.i] || { fixed:FIXED[1] }));
+wireInfo(document.getElementById('sinfA'), document.getElementById('sinfoA'), () => S.sa.fixed ? infoFor({ fixed:S.sa.fixed }, []) : infoFor({ year:S.sa.year }, YEARS[S.sa.year].layers.filter(l => S.shownA.includes(l.id))));
+wireInfo(document.getElementById('sinfB'), document.getElementById('sinfoB'), () => S.sb.fixed ? infoFor({ fixed:S.sb.fixed }, []) : infoFor({ year:S.sb.year }, YEARS[S.sb.year].layers.filter(l => S.shownB.includes(l.id))));
+document.getElementById('tprev').onclick = () => timeSet(T.i - 1);
+document.getElementById('tnext').onclick = () => timeSet(T.i + 1);
+document.getElementById('tgo').onclick = () => {
+  const st = T.stops[T.i]; if (!st || st.fixed) return;
+  const c = T.map.getCenter(), b = YEARS[st.year].layers.map(l => l.bounds).sort((a,b) => dist(a,c) - dist(b,c))[0];
+  T.map.fitBounds([[b[0],b[1]],[b[2],b[3]]], { padding:40, duration:1600 });
+};
+addEventListener('keydown', e => {
+  if (document.documentElement.dataset.mode !== 'time' || e.target.matches('input, select')) return;
+  if (e.key === ' ') { playing ? stopPlay() : startPlay(); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') { timeSet(T.i - 1); e.preventDefault(); }
+  if (e.key === 'ArrowRight') { timeSet(T.i + 1); e.preventDefault(); }
+});
+// drag along the slider
+const ttrack = document.getElementById('ttrack'); let tdrag = false;
+const tAt = x => { const r = ttrack.getBoundingClientRect(); return Math.floor((x - r.left) / r.width * T.stops.length); };
+ttrack.addEventListener('pointerdown', e => { tdrag = true; ttrack.setPointerCapture(e.pointerId); timeSet(tAt(e.clientX)); });
+ttrack.addEventListener('pointermove', e => { if (tdrag && tAt(e.clientX) !== T.i) timeSet(tAt(e.clientX)); });
+ttrack.addEventListener('pointerup', () => { tdrag = false; });
+
+// the catalogue: fetched fresh each visit (cache: no-cache, as the scheme says); a failure is shown, not swallowed
+const loadErr = document.getElementById('loadErr');
+function showError(title, detail) {
+  loadErr.querySelector('h2').textContent = title; loadErr.querySelector('p').textContent = detail;
+  loadErr.querySelector('code').textContent = dataUrl('layers.json'); loadErr.hidden = false;
+}
+fetch(dataUrl('layers.json'), { cache:'no-cache' })
+  .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+  .then(d => {
+    const L = d.layers || d;
+    for (const l of (Array.isArray(L) ? L : Object.values(L))) {
+      if (!KIND[l.group] || l.display === false || SKIP_LAYERS.includes(l.id)) continue;
+      if (l.kind && l.kind !== 'raster' || !l.tile_url) continue;   // the timeline shows rasters only
+      const y = l.group === 'landuse' ? 2031 : +(l.title.match(/^\d{4}/) || [])[0];
+      if (!y || SKIP_YEARS.includes(y)) continue;
+      (YEARS[y] ||= { kind:KIND[l.group], layers:[] }).layers.push(l);
+    }
+    const years = Object.keys(YEARS).map(Number);
+    if (!years.length) return showError('No timeline maps in the catalogue', 'layers.json loaded, but it lists no raster in the groups the timeline shows (archive maps, archive imagery, toposheets, land use).');
+    const launch = years.filter(y => !LAUNCH_SKIP.includes(y));
+    (launch.length ? launch : years).forEach(y => addPane({ year:y }));
+    FIXED.forEach(f => addPane({ fixed:f }));
+    // once the grid has its final size, fit the start frame into the first window (the others follow)
+    panes[0].map.resize(); panes[0].map.fitBounds(START_BOUNDS, { padding:8, duration:0 });
+  })
+  .catch(err => showError('The map catalogue did not load', `${err.message}. The timeline reads its list of maps from the open-data site; check the connection, or that this address answers.`));
+// for the headless check (check/check.mjs)
+window.__tl = { get panes() { return panes; }, get T() { return T; }, get S() { return S; }, get YEARS() { return YEARS; }, DATA_BASE };
+</script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "release": "test-0",
+  "data_base": "https://hulf-observatory.github.io/hyderabad-data/",
+  "tiles_worker": "https://hyd-tiles.hulf-observatory.workers.dev",
+  "note": "Test catalogue for City Timeline (check/check.mjs): three fake years, all drawn from the Worker's synthetic test raster. Same schema as the real layers.json in the open-data scheme.",
+  "bounds_limit": [77.1, 15.7, 81.5, 20.05],
+  "groups": [
+    { "id": "toposheets", "title": "Toposheets", "order": 16 },
+    { "id": "archive_imagery", "title": "Archive Imagery", "order": 17 },
+    { "id": "archive_maps", "title": "Archive Maps", "order": 18 }
+  ],
+  "layers": [
+    {
+      "id": "test_map_1908", "title": "1908 Test map (synthetic raster)", "group": "archive_maps", "subgroup": null, "order": 700,
+      "kind": "raster", "geom": null, "source_layer": null, "version": "test-0",
+      "tile_url": "https://hyd-tiles.hulf-observatory.workers.dev/r/test-0/synthetic_raster/{z}/{x}/{y}.webp",
+      "tile_size": 256, "minzoom": 8, "maxzoom": 10,
+      "bounds": [78.0, 16.96, 79.05, 17.90], "center": [78.525, 17.43],
+      "feature_count": null, "fields": [], "description": "Synthetic raster used to test hosting; not a real map.",
+      "source_name": "Hyderabad Urban Observatory (hosting test)", "source_url": "https://github.com/hulf-observatory/hyderabad-data",
+      "attribution": "Hyderabad Urban Observatory", "date": "1908", "licence": "CC BY 4.0",
+      "default_visible": false, "style": null, "encoding": null, "display": true, "legend": null, "legend_image": null,
+      "download": { "pmtiles": "https://hyd-tiles.hulf-observatory.workers.dev/r/test-0/synthetic_raster.pmtiles" }
+    },
+    {
+      "id": "test_imagery_1967", "title": "1967 Test imagery (synthetic raster)", "group": "archive_imagery", "subgroup": null, "order": 710,
+      "kind": "raster", "geom": null, "source_layer": null, "version": "test-0",
+      "tile_url": "https://hyd-tiles.hulf-observatory.workers.dev/r/test-0/synthetic_raster/{z}/{x}/{y}.webp",
+      "tile_size": 256, "minzoom": 8, "maxzoom": 10,
+      "bounds": [78.0, 16.96, 79.05, 17.90], "center": [78.525, 17.43],
+      "feature_count": null, "fields": [], "description": "Synthetic raster used to test hosting; not a real image.",
+      "source_name": "Hyderabad Urban Observatory (hosting test)", "source_url": "https://github.com/hulf-observatory/hyderabad-data",
+      "attribution": "Hyderabad Urban Observatory", "date": "1967", "licence": "CC BY 4.0",
+      "default_visible": false, "style": null, "encoding": null, "display": true, "legend": null, "legend_image": null,
+      "download": { "pmtiles": "https://hyd-tiles.hulf-observatory.workers.dev/r/test-0/synthetic_raster.pmtiles" }
+    },
+    {
+      "id": "test_topo_1975", "title": "1975 Test toposheet (synthetic raster)", "group": "toposheets", "subgroup": null, "order": 720,
+      "kind": "raster", "geom": null, "source_layer": null, "version": "test-0",
+      "tile_url": "https://hyd-tiles.hulf-observatory.workers.dev/r/test-0/synthetic_raster/{z}/{x}/{y}.webp",
+      "tile_size": 256, "minzoom": 8, "maxzoom": 10,
+      "bounds": [78.0, 16.96, 79.05, 17.90], "center": [78.525, 17.43],
+      "feature_count": null, "fields": [], "description": "Synthetic raster used to test hosting; not a real sheet.",
+      "source_name": "Hyderabad Urban Observatory (hosting test)", "source_url": "https://github.com/hulf-observatory/hyderabad-data",
+      "attribution": "Hyderabad Urban Observatory", "date": "1975", "licence": "CC BY 4.0",
+      "default_visible": false, "style": null, "encoding": null, "display": true, "legend": null, "legend_image": null,
+      "download": { "pmtiles": "https://hyd-tiles.hulf-observatory.workers.dev/r/test-0/synthetic_raster.pmtiles" }
+    }
+  ],
+  "failed": []
+}

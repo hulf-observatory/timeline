@@ -1,0 +1,866 @@
+[
+{
+"name": "Afzal Gunj Mosque",
+"ward": "Begum Bazar",
+"zone": "Central Zone",
+"c": [
+78.475722,
+17.373974
+]
+},
+{
+"name": "Allah Banda Hill",
+"ward": "Mangalhat",
+"zone": "Central Zone",
+"c": [
+78.456318,
+17.378711
+]
+},
+{
+"name": "Amberpet Burj",
+"ward": "Bagh Amberpet",
+"zone": "Central Zone",
+"c": [
+78.51807,
+17.392715
+]
+},
+{
+"name": "Bella Vista (Administratvie Staff College)",
+"ward": "Khairtabad",
+"zone": "Central Zone",
+"c": [
+78.459119,
+17.415227
+]
+},
+{
+"name": "Central Bank Building",
+"ward": "Jambagh(Nampally)",
+"zone": "Central Zone",
+"c": [
+78.480477,
+17.385015
+]
+},
+{
+"name": "Cliff Rock",
+"ward": "Jubilee Hills",
+"zone": "Central Zone",
+"c": [
+78.398905,
+17.431078
+]
+},
+{
+"name": "Clock Tower",
+"ward": "Gunfoundry(Abids)",
+"zone": "Central Zone",
+"c": [
+78.471055,
+17.399842
+]
+},
+{
+"name": "Clock Tower",
+"ward": "Gunfoundry(Abids)",
+"zone": "Central Zone",
+"c": [
+78.486929,
+17.386251
+]
+},
+{
+"name": "College Of Nursing",
+"ward": "Khairtabad",
+"zone": "Central Zone",
+"c": [
+78.460837,
+17.417815
+]
+},
+{
+"name": "Dargah Yousufain",
+"ward": "Jambagh(Nampally)",
+"zone": "Central Zone",
+"c": [
+78.465414,
+17.389758
+]
+},
+{
+"name": "Devdi Mehdi Nawaj Jung",
+"ward": "Venkateshwara Colony",
+"zone": "Central Zone",
+"c": [
+78.448136,
+17.417493
+]
+},
+{
+"name": "Dhanrajgiri Complex",
+"ward": "Gosha Mahal",
+"zone": "Central Zone",
+"c": [
+78.465693,
+17.379752
+]
+},
+{
+"name": "Dilkusha Guest House",
+"ward": "Khairtabad",
+"zone": "Central Zone",
+"c": [
+78.462061,
+17.420692
+]
+},
+{
+"name": "Director Of Industries",
+"ward": "Gunfoundry(Abids)",
+"zone": "Central Zone",
+"c": [
+78.474962,
+17.392592
+]
+},
+{
+"name": "E.n.t. Hospital",
+"ward": "Jambagh(Nampally)",
+"zone": "Central Zone",
+"c": [
+78.482157,
+17.384265
+]
+},
+{
+"name": "Erram Manzil",
+"ward": "Khairtabad",
+"zone": "Central Zone",
+"c": [
+78.454785,
+17.418603
+]
+},
+{
+"name": "Ganga Bowli Ka Pahad",
+"ward": "Dattathreya Nagar",
+"zone": "Central Zone",
+"c": [
+78.453689,
+17.376276
+]
+},
+{
+"name": "Gate Portion Of Dargah Nooruddin Shah",
+"ward": "Jambagh(Nampally)",
+"zone": "Central Zone",
+"c": [
+78.466624,
+17.385955
+]
+},
+{
+"name": "Golden Threshold",
+"ward": "Jambagh(Nampally)",
+"zone": "Central Zone",
+"c": [
+78.474242,
+17.388075
+]
+},
+{
+"name": "Goshamahal Baradari Palace",
+"ward": "Jambagh(Nampally)",
+"zone": "Central Zone",
+"c": [
+78.47045,
+17.382096
+]
+},
+{
+"name": "Javahar Bal Bhavan",
+"ward": "Red Hills",
+"zone": "Central Zone",
+"c": [
+78.469273,
+17.397856
+]
+},
+{
+"name": "Jhamshingh Temple",
+"ward": "Gudimalkapur",
+"zone": "Central Zone",
+"c": [
+78.433073,
+17.38469
+]
+},
+{
+"name": "Jubilee Hall",
+"ward": "Red Hills",
+"zone": "Central Zone",
+"c": [
+78.468123,
+17.398951
+]
+},
+{
+"name": "King Koti Hospital",
+"ward": "Gunfoundry(Abids)",
+"zone": "Central Zone",
+"c": [
+78.482535,
+17.392395
+]
+},
+{
+"name": "Lady Hyderi Club",
+"ward": "Himayatnagar",
+"zone": "Central Zone",
+"c": [
+78.477445,
+17.405508
+]
+},
+{
+"name": "Madras-E-Aliya",
+"ward": "Gunfoundry(Abids)",
+"zone": "Central Zone",
+"c": [
+78.474722,
+17.397388
+]
+},
+{
+"name": "Mahboobia Girls High School & Junior College",
+"ward": "Gunfoundry(Abids)",
+"zone": "Central Zone",
+"c": [
+78.474806,
+17.395742
+]
+},
+{
+"name": "Mini Bal Bhavan",
+"ward": "Red Hills",
+"zone": "Central Zone",
+"c": [
+78.469503,
+17.399943
+]
+},
+{
+"name": "Moazam Jahi Market",
+"ward": "Jambagh(Nampally)",
+"zone": "Central Zone",
+"c": [
+78.475237,
+17.384095
+]
+},
+{
+"name": "Monster Rock",
+"ward": "Jubilee Hills",
+"zone": "Central Zone",
+"c": [
+78.406434,
+17.420774
+]
+},
+{
+"name": "Mosque (Near Jhamsingh Temple)",
+"ward": "Gudimalkapur",
+"zone": "Central Zone",
+"c": [
+78.433487,
+17.384763
+]
+},
+{
+"name": "Nazari Bagh",
+"ward": "Gunfoundry(Abids)",
+"zone": "Central Zone",
+"c": [
+78.480978,
+17.392788
+]
+},
+{
+"name": "Nizam Club",
+"ward": "Gunfoundry(Abids)",
+"zone": "Central Zone",
+"c": [
+78.468498,
+17.403321
+]
+},
+{
+"name": "Nizam College",
+"ward": "Gunfoundry(Abids)",
+"zone": "Central Zone",
+"c": [
+78.476153,
+17.398959
+]
+},
+{
+"name": "Nizamia Observatory",
+"ward": "Somajiguda",
+"zone": "Central Zone",
+"c": [
+78.453972,
+17.433347
+]
+},
+{
+"name": "Osmania General Hospital",
+"ward": "Begum Bazar",
+"zone": "Central Zone",
+"c": [
+78.473827,
+17.372323
+]
+},
+{
+"name": "Public Garden Mosque",
+"ward": "Red Hills",
+"zone": "Central Zone",
+"c": [
+78.469208,
+17.400389
+]
+},
+{
+"name": "Purnamal Samadhi",
+"ward": "Mangalhat",
+"zone": "Central Zone",
+"c": [
+78.460044,
+17.383159
+]
+},
+{
+"name": "Residency Complex",
+"ward": "Gunfoundry(Abids)",
+"zone": "Central Zone",
+"c": [
+78.48562,
+17.3827
+]
+},
+{
+"name": "Ritz Hotel",
+"ward": "Gunfoundry(Abids)",
+"zone": "Central Zone",
+"c": [
+78.47428,
+17.403014
+]
+},
+{
+"name": "Rock Dattariya",
+"ward": "Asif Nagar",
+"zone": "Central Zone",
+"c": [
+78.453492,
+17.384864
+]
+},
+{
+"name": "Sitarambagh Temple",
+"ward": "Mangalhat",
+"zone": "Central Zone",
+"c": [
+78.456847,
+17.384376
+]
+},
+{
+"name": "St. George's Church",
+"ward": "Gunfoundry(Abids)",
+"zone": "Central Zone",
+"c": [
+78.477072,
+17.392911
+]
+},
+{
+"name": "State Archeological Museum",
+"ward": "Red Hills",
+"zone": "Central Zone",
+"c": [
+78.470254,
+17.39907
+]
+},
+{
+"name": "State Central Library",
+"ward": "Begum Bazar",
+"zone": "Central Zone",
+"c": [
+78.478359,
+17.373943
+]
+},
+{
+"name": "Taj Mahal Hotel (Old Block)",
+"ward": "Gunfoundry(Abids)",
+"zone": "Central Zone",
+"c": [
+78.477008,
+17.391456
+]
+},
+{
+"name": "Vijay Marie Church",
+"ward": "Red Hills",
+"zone": "Central Zone",
+"c": [
+78.455946,
+17.406597
+]
+},
+{
+"name": "Yousuf Tekhri",
+"ward": "Nanalnagar",
+"zone": "Central Zone",
+"c": [
+78.423544,
+17.397332
+]
+},
+{
+"name": "Vicotria Memorial",
+"ward": "Saroornagar",
+"zone": "East Zone",
+"c": [
+78.54128,
+17.361528
+]
+},
+{
+"name": "Air & Land Warfare Building",
+"ward": "Begumpet",
+"zone": "North Zone",
+"c": [
+78.492996,
+17.441459
+]
+},
+{
+"name": "Allauddin's Building",
+"ward": "Begumpet",
+"zone": "North Zone",
+"c": [
+78.466359,
+17.445047
+]
+},
+{
+"name": "Chiran Fort Club",
+"ward": "Begumpet",
+"zone": "North Zone",
+"c": [
+78.475711,
+17.440022
+]
+},
+{
+"name": "Clock Tower",
+"ward": "Monda Market",
+"zone": "North Zone",
+"c": [
+78.498694,
+17.440745
+]
+},
+{
+"name": "Clock Tower & Police Station, James Street",
+"ward": "Ramgopalpet",
+"zone": "North Zone",
+"c": [
+78.48853,
+17.436092
+]
+},
+{
+"name": "Hyderabad Public School",
+"ward": "Begumpet",
+"zone": "North Zone",
+"c": [
+78.457131,
+17.444505
+]
+},
+{
+"name": "Lakshmi Paper Mart's Big",
+"ward": "Ramgopalpet",
+"zone": "North Zone",
+"c": [
+78.488601,
+17.437221
+]
+},
+{
+"name": "Mohanlal Malani's Res.",
+"ward": "Ramgopalpet",
+"zone": "North Zone",
+"c": [
+78.488593,
+17.436576
+]
+},
+{
+"name": "Monty's Hotel",
+"ward": "Begumpet",
+"zone": "North Zone",
+"c": [
+78.489995,
+17.441699
+]
+},
+{
+"name": "Paigah Palace",
+"ward": "Begumpet",
+"zone": "North Zone",
+"c": [
+78.474265,
+17.441197
+]
+},
+{
+"name": "Parsi Dharmasala",
+"ward": "Ramgopalpet",
+"zone": "North Zone",
+"c": [
+78.48753,
+17.439416
+]
+},
+{
+"name": "Spanish Mosque",
+"ward": "Begumpet",
+"zone": "North Zone",
+"c": [
+78.472581,
+17.443669
+]
+},
+{
+"name": "St. John's Church",
+"ward": "Monda Market",
+"zone": "North Zone",
+"c": [
+78.506553,
+17.442563
+]
+},
+{
+"name": "St. Mary's Cathedral",
+"ward": "Monda Market",
+"zone": "North Zone",
+"c": [
+78.50237,
+17.44207
+]
+},
+{
+"name": "Vikhar Manzil",
+"ward": "Begumpet",
+"zone": "North Zone",
+"c": [
+78.471702,
+17.440201
+]
+},
+{
+"name": "Osmania Arts College",
+"ward": "Ou",
+"zone": "Null",
+"c": [
+78.526357,
+17.41915
+]
+},
+{
+"name": "Aliabad Sarai",
+"ward": "Shalibanda",
+"zone": "South Zone",
+"c": [
+78.470541,
+17.345022
+]
+},
+{
+"name": "Ameen Manzil",
+"ward": "Akberbagh",
+"zone": "South Zone",
+"c": [
+78.507914,
+17.362068
+]
+},
+{
+"name": "Asman Garh Palace",
+"ward": "Saidabad",
+"zone": "South Zone",
+"c": [
+78.515925,
+17.367618
+]
+},
+{
+"name": "Azha Khana-E-Zahra",
+"ward": "Pather Gatti",
+"zone": "South Zone",
+"c": [
+78.482553,
+17.372651
+]
+},
+{
+"name": "Baradari Of Nawab Khursheed Jah Bahadur",
+"ward": "Puranapool",
+"zone": "South Zone",
+"c": [
+78.466456,
+17.357797
+]
+},
+{
+"name": "Charkaman",
+"ward": "Gansibazar",
+"zone": "South Zone",
+"c": [
+78.474132,
+17.363431
+]
+},
+{
+"name": "Chow Mahalla Palace",
+"ward": "Gansibazar",
+"zone": "South Zone",
+"c": [
+78.471779,
+17.357688
+]
+},
+{
+"name": "City College",
+"ward": "Gansibazar",
+"zone": "South Zone",
+"c": [
+78.469664,
+17.368474
+]
+},
+{
+"name": "Dargah Hazrath Shujaddin",
+"ward": "Lalithabagh",
+"zone": "South Zone",
+"c": [
+78.495656,
+17.350018
+]
+},
+{
+"name": "Dargah Syed Shah Mir Mahmoodwahi",
+"ward": "Suleman Nagar",
+"zone": "South Zone",
+"c": [
+78.431643,
+17.347068
+]
+},
+{
+"name": "Devdi-Iqbal-Ud-Doula",
+"ward": "Puranapool",
+"zone": "South Zone",
+"c": [
+78.467859,
+17.35674
+]
+},
+{
+"name": "Falaknuma Palace",
+"ward": "Falaknuma",
+"zone": "South Zone",
+"c": [
+78.467635,
+17.331211
+]
+},
+{
+"name": "Gate Portion",
+"ward": "Gansibazar",
+"zone": "South Zone",
+"c": [
+78.472341,
+17.361802
+]
+},
+{
+"name": "Gate Portion, Dewan Devdi Two Gates",
+"ward": "Pather Gatti",
+"zone": "South Zone",
+"c": [
+78.476638,
+17.368748
+]
+},
+{
+"name": "Govt. Unani Hospital",
+"ward": "Pather Gatti",
+"zone": "South Zone",
+"c": [
+78.4752,
+17.360394
+]
+},
+{
+"name": "High Court",
+"ward": "Gansibazar",
+"zone": "South Zone",
+"c": [
+78.472175,
+17.368974
+]
+},
+{
+"name": "Jama Masjid",
+"ward": "Gansibazar",
+"zone": "South Zone",
+"c": [
+78.471555,
+17.361608
+]
+},
+{
+"name": "Kalikaman",
+"ward": "Pather Gatti",
+"zone": "South Zone",
+"c": [
+78.476162,
+17.363089
+]
+},
+{
+"name": "Kaman Chatta Bazar",
+"ward": "Pather Gatti",
+"zone": "South Zone",
+"c": [
+78.477824,
+17.368743
+]
+},
+{
+"name": "Machilikaman",
+"ward": "Pather Gatti",
+"zone": "South Zone",
+"c": [
+78.474899,
+17.362295
+]
+},
+{
+"name": "Mahbub Mansion",
+"ward": "Old Malakpet",
+"zone": "South Zone",
+"c": [
+78.505506,
+17.376014
+]
+},
+{
+"name": "Malwala Palace Main Courtyard",
+"ward": "Pather Gatti",
+"zone": "South Zone",
+"c": [
+78.478656,
+17.360344
+]
+},
+{
+"name": "Manji Begum Ki Haveli",
+"ward": "Gansibazar",
+"zone": "South Zone",
+"c": [
+78.472586,
+17.358045
+]
+},
+{
+"name": "Mushk Mahal",
+"ward": "Attapur",
+"zone": "South Zone",
+"c": [
+78.432397,
+17.365303
+]
+},
+{
+"name": "Princess Esin Women's Education Centre",
+"ward": "Pather Gatti",
+"zone": "South Zone",
+"c": [
+78.481671,
+17.364787
+]
+},
+{
+"name": "Puranapul Bridge",
+"ward": "Gansibazar",
+"zone": "South Zone",
+"c": [
+78.458234,
+17.367574
+]
+},
+{
+"name": "Purani Haveli Complex",
+"ward": "Pather Gatti",
+"zone": "South Zone",
+"c": [
+78.482789,
+17.36458
+]
+},
+{
+"name": "Sardar Mahal",
+"ward": "Pather Gatti",
+"zone": "South Zone",
+"c": [
+78.476611,
+17.360762
+]
+},
+{
+"name": "Shahi Khilwat Khana",
+"ward": "Gansibazar",
+"zone": "South Zone",
+"c": [
+78.471943,
+17.359525
+]
+},
+{
+"name": "Sher-E-Basti-Kil-Kaman",
+"ward": "Pather Gatti",
+"zone": "South Zone",
+"c": [
+78.475414,
+17.364332
+]
+},
+{
+"name": "Victoria Maternity Hospital",
+"ward": "Gansibazar",
+"zone": "South Zone",
+"c": [
+78.473735,
+17.36905
+]
+}
+]
