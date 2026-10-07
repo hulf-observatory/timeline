@@ -6,7 +6,7 @@ on the phone). Details and how to run it: `README.md`.
 
 ## Hosting
 
-- **Page:** this repo on GitHub Pages, https://hulf-observatory.github.io/timeline/. Deploy = push
+- **Page:** this repo on GitHub Pages, https://timeline.hyderabad.urbanobservatory.in/. Deploy = push
   to `main`. Nothing to install, no server, no nginx, no tile proxy.
 - **Data:** read from the open-data site `hulf-observatory/hyderabad-data` (GitHub Pages for the
   catalogue and small files, GitHub Releases through the `hyd-tiles` Cloudflare Worker for raster
@@ -28,5 +28,5 @@ on the phone). Details and how to run it: `README.md`.
 ## Main site
 
 The site's City Timeline card and the waterscapes story link should point at
-https://hulf-observatory.github.io/timeline/ (earlier plans used /timeline/ on the main site's
+https://timeline.hyderabad.urbanobservatory.in/ (earlier plans used /timeline/ on the main site's
 host; that path no longer exists).

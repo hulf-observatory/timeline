@@ -3,7 +3,7 @@
 Compare Hyderabad's archive maps, satellite imagery, toposheets and the 2031 proposed land use
 over time: a grid of synced map windows, a time slider, and a map slider. Rasters only.
 
-Live at **https://hulf-observatory.github.io/timeline/** (GitHub Pages, this repo's `main`).
+Live at **https://timeline.hyderabad.urbanobservatory.in/** (GitHub Pages, this repo's `main`).
 One static page (`index.html`) plus `place-search.js` and `vendor/` (MapLibre GL 5.24, fonts).
 No server, no build step.
 
@@ -14,7 +14,7 @@ Everything the page shows is open data addressed as in
 
 | What | From |
 |---|---|
-| `layers.json` (the catalogue), `nav/areas.json` (search areas), `heritage.json` | `DATA_BASE` = https://hulf-observatory.github.io/hyderabad-data/ (GitHub Pages) |
+| `layers.json` (the catalogue), `nav/areas.json` (search areas), `heritage.json` | `DATA_BASE` = https://data.hyderabad.urbanobservatory.in/ (GitHub Pages) |
 | Raster tiles | each layer's absolute `tile_url` on the Worker, https://hyd-tiles.hulf-observatory.workers.dev/r/<release>/<id>/{z}/{x}/{y}.webp |
 | Downloads | each layer's `download.pmtiles` (Worker → 302 to the GitHub Release) |
 | Basemap and satellite | Esri public tile servers |

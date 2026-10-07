@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "release": "test-0",
-  "data_base": "https://hulf-observatory.github.io/hyderabad-data/",
+  "data_base": "https://data.hyderabad.urbanobservatory.in/",
   "tiles_worker": "https://hyd-tiles.hulf-observatory.workers.dev",
   "note": "Test catalogue for City Timeline (check/check.mjs): three fake years, all drawn from the Worker's synthetic test raster. Same schema as the real layers.json in the open-data scheme.",
   "bounds_limit": [77.1, 15.7, 81.5, 20.05],

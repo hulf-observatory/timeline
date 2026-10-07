@@ -412,7 +412,7 @@ const START_BOUNDS = [[78.4448,17.4080],[78.5022,17.4440]];   // the start frame
 // ?data=http://127.0.0.1:8130/test/ points it at another catalogue (local testing).
 const DATA_BASE = (() => {
   const d = new URLSearchParams(location.search).get('data');
-  return d ? new URL(d.endsWith('/') ? d : d + '/', location.href).href : 'https://hulf-observatory.github.io/hyderabad-data/';
+  return d ? new URL(d.endsWith('/') ? d : d + '/', location.href).href : 'https://data.hyderabad.urbanobservatory.in/';
 })();
 const dataUrl = path => new URL(path, DATA_BASE).href;
 // raster layers carry an absolute tile_url (the Worker, release-versioned: no ?v= appended)
