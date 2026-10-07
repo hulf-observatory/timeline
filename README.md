@@ -10,7 +10,7 @@ No server, no build step.
 ## Where the data comes from
 
 Everything the page shows is open data addressed as in
-`observatory-work/notes/open-data-scheme.md`:
+[SCHEME.md in hyderabad-data](https://github.com/hulf-observatory/hyderabad-data/blob/main/SCHEME.md):
 
 | What | From |
 |---|---|
