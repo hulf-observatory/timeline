@@ -148,7 +148,8 @@ await clickSel('.pane .inf');
 await waitFor(`!!document.querySelector('.pane .infopop:not([hidden]) .item')`, 3000);
 const info = JSON.parse(await evaluate(`JSON.stringify({ text: document.querySelector('.pane .infopop:not([hidden])').innerText, dl: (document.querySelector('.pane .infopop:not([hidden]) a.dl') || {}).href || '' })`));
 console.log('info:', info.text.replace(/\n/g, ' | '));
-if (!/\.pmtiles$/.test(info.dl)) problems.push('info popover has no PMTiles download link');
+// downloads are switched off for now (SHOW_DOWNLOADS in index.html); the popover must still name the layer
+if (!info.text || !info.text.trim()) problems.push('info popover is empty');
 if (!/licen|CC |©/i.test(info.text) && !LIVE) problems.push('info popover shows no licence');
 await shot('info');
 await clickAt(700, 870);   // outside: closes it
