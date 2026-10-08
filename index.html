@@ -406,6 +406,7 @@ html[data-mode=swipe] .grid, html[data-mode=swipe] .edge, html[data-mode=swipe] 
 const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/';
 const GREY = ESRI + 'Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}';
 const GREY_LABELS = ESRI + 'Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}';
+const SHOW_DOWNLOADS = false;   // per-map download links in the ⓘ popover
 const START_VIEW = { c:[78.4735,17.4260], z:12.1 };   // Hussain Sagar
 const START_BOUNDS = [[78.4448,17.4080],[78.5022,17.4440]];   // the start frame: the whole lake with a margin, fitted to the window size
 // Data comes from the open-data site (observatory-work/notes/open-data-scheme.md): layers.json, nav/areas.json
@@ -487,7 +488,8 @@ function infoHtml({ ey, items }) {
     const src = l.source_name ? (l.source_url ? `<a href="${esc(l.source_url)}" target="_blank" rel="noopener">${esc(l.source_name)}</a>` : esc(l.source_name)) : '';
     const meta = [src, l.date && esc(l.date), l.licence && esc(l.licence)].filter(Boolean).join(' · ');
     const attr = l.attribution && l.attribution !== l.source_name ? `<div class="meta">${esc(l.attribution)}</div>` : '';
-    const dl = l.download && l.download.pmtiles ? `<a class="dl" href="${esc(l.download.pmtiles)}" rel="noopener">Download · PMTiles</a>` : '';
+    // downloads are off for now (the catalogue still carries download URLs; flip SHOW_DOWNLOADS to show them)
+    const dl = SHOW_DOWNLOADS && l.download && l.download.pmtiles ? `<a class="dl" href="${esc(l.download.pmtiles)}" rel="noopener">Download · PMTiles</a>` : '';
     return `<div class="item"><b>${esc(l.title)}</b>${meta ? `<div class="meta">${meta}</div>` : ''}${attr}${dl}</div>`;
   };
   return `<div class="ey">${esc(ey)}</div>` + items.map(item).join('');
