@@ -332,6 +332,39 @@ html[data-mode=swipe] .grid, html[data-mode=swipe] .edge, html[data-mode=swipe] 
   #places .side-body { padding:0 12px 16px; }
 }
 </style>
+<style>
+/* Visual standard (24 Oct 2026): Lato type, white page, flat 4 px panels and controls, the app bar in the same style
+   as the reading pages' header. Popovers floating over a map keep their rounded corners and shadow.
+   Reference: observatory-work/design/visual-standard.html. */
+@font-face { font-family: Lato; src: url(vendor/fonts/lato-400-latin.woff2) format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: Lato; src: url(vendor/fonts/lato-700-latin.woff2) format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: Lato; src: url(vendor/fonts/lato-900-latin.woff2) format('woff2'); font-weight: 900; font-display: swap; }
+:root { --canvas:#FFFFFF; --r-ctl:4px; --r-pill:3px; --topbar-h:64px;
+  --font-ui:Lato,'Helvetica Neue',Arial,sans-serif; --font-narrow:Lato,'Helvetica Neue',Arial,sans-serif; }
+.bar { padding:0 24px; }
+.brand { gap:12px; }
+.brand-logo { width:36px; height:36px; }
+.brand-wm { font:400 13.5px/1.1 var(--font-brand); letter-spacing:.18em; }
+.brand-sub { font:400 11px/1.3 var(--font-ui); letter-spacing:.02em; text-transform:none; margin-top:3px; }
+.pane, .side { border-radius:4px; box-shadow:none; border:1px solid var(--border); }
+.seg button, .pills button, .phmodes button, .tabs button { font-family:var(--font-ui); letter-spacing:.02em; text-transform:none; font-size:13px; }
+.seg button.on { box-shadow:0 0 0 1px var(--border); }
+.pills button, .phmodes button { border-radius:var(--r-ctl); }
+@media (max-width:767px) { .bar { padding:0 12px; gap:10px; } .brand-logo { width:30px; height:30px; } .brand-wm { font-size:12px; letter-spacing:.14em; }
+  .phmodes button { padding:6px 10px; font-size:12px; } .obs-mbtn { width:32px; height:32px; } }
+.ctl .lab, .eyebrow, .mxlab, .infopop .ey { font-weight:900; letter-spacing:.12em; }
+/* Observatory menu in the app bar (fixed card: the bar clips overflow on phones) */
+.obs-mbtn { flex:none; width:var(--ctl-h); height:var(--ctl-h); border:1px solid var(--border); border-radius:var(--r-ctl); background:var(--surface);
+  display:grid; place-items:center; cursor:pointer; color:var(--ink); padding:0; }
+.obs-mbtn:hover { background:var(--surface-2); }
+.obs-mbtn i { display:block; width:16px; height:1.5px; background:currentColor; box-shadow:0 -5px 0 currentColor, 0 5px 0 currentColor; }
+.obs-appmenu-card { position:fixed; right:16px; top:calc(var(--topbar-h) + 4px); min-width:210px; z-index:60; background:var(--surface);
+  border:1px solid var(--border); border-radius:var(--r-ctl); padding:6px; display:grid; }
+.obs-appmenu-card[hidden] { display:none; }
+.obs-appmenu-card a { padding:10px 12px; border-radius:var(--r-ctl); font-size:15px; color:var(--text-2); text-decoration:none; }
+.obs-appmenu-card a:hover { background:var(--surface-2); color:var(--ink); }
+.obs-appmenu-card .lab { padding:8px 12px 4px; font:900 11px/1.2 var(--font-ui); letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+</style>
 </head>
 <body>
 <div class="bar">
@@ -354,7 +387,16 @@ html[data-mode=swipe] .grid, html[data-mode=swipe] .edge, html[data-mode=swipe] 
     <button data-v="row" title="One row; wheel or ‹ › moves along the timeline, ctrl/⌘ + wheel zooms">Row</button></div>
   <div class="phmodes" id="phmodes"><button data-mode="grid" class="on">Swipe</button><button data-mode="swipe">Compare</button></div>
   <div class="seg" id="modes"><button class="on" data-mode="grid">Grid</button><button data-mode="time">Time<span class="long"> slider</span></button><button data-mode="swipe">Map<span class="long"> slider</span></button></div>
+  <button type="button" class="obs-mbtn" id="btn-sitemenu" title="Observatory" aria-label="Observatory menu" aria-expanded="false" aria-controls="sitemenu"><i></i></button>
 </div>
+<nav class="obs-appmenu-card" id="sitemenu" aria-label="Observatory" hidden>
+  <span class="lab">Hyderabad Urban Observatory</span>
+  <a href="https://hyderabad.urbanobservatory.in/">Home</a>
+  <a href="https://hyderabad.urbanobservatory.in/tools/">Tools</a>
+  <a href="https://hyderabad.urbanobservatory.in/stories/">Stories</a>
+  <a href="https://hyderabad.urbanobservatory.in/data/">Data sources</a>
+  <a href="https://hyderabad.urbanobservatory.in/about">About the Observatory</a>
+</nav>
 <div class="main">
 <aside class="side" id="places">
   <button class="grip" id="grip" type="button" aria-label="Open or close the panel"></button>
@@ -1002,6 +1044,16 @@ fetch(dataUrl('layers.json'), { cache:'no-cache' })
   .catch(err => showError('The map catalogue did not load', `${err.message}. The timeline reads its list of maps from the open-data site; check the connection, or that this address answers.`));
 // for the headless check (check/check.mjs)
 window.__tl = { get panes() { return panes; }, get T() { return T; }, get S() { return S; }, get YEARS() { return YEARS; }, DATA_BASE };
+</script>
+<script>
+  // Observatory menu in the app bar: the button toggles the link card; Escape or a click outside closes it
+  (() => {
+    const b = document.getElementById('btn-sitemenu'), m = document.getElementById('sitemenu');
+    const set = (open) => { m.hidden = !open; b.setAttribute('aria-expanded', open); };
+    b.addEventListener('click', () => set(m.hidden));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !m.hidden) { set(false); b.focus(); } });
+    document.addEventListener('pointerdown', (e) => { if (!m.hidden && !m.contains(e.target) && !b.contains(e.target)) set(false); });
+  })();
 </script>
 </body>
 </html>
