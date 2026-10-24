@@ -68,7 +68,7 @@ const evaluate = async (expr) => {
 
 const problems = [];
 const origin = new URL(BASE).origin;
-const HOSTS = ['data.hyderabad.urbanobservatory.in', 'hulf-observatory.github.io', 'hyd-tiles.hulf-observatory.workers.dev',
+const HOSTS = ['hyderabad.urbanobservatory.in', 'hulf-observatory.github.io', 'hyd-tiles.hulf-observatory.workers.dev',
   'photon.komoot.io', 'github.com', 'objects.githubusercontent.com'];
 const allowed = (u) => {
   if (u.startsWith('data:') || u.startsWith('blob:') || u === 'about:blank') return true;
