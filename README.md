@@ -10,7 +10,7 @@ No server, no build step.
 ## Where the data comes from
 
 Everything the page shows is open data addressed as in
-[SCHEME.md in hyderabad-data](https://github.com/hulf-observatory/hyderabad-data/blob/main/SCHEME.md):
+[SCHEME.md in the data repo](https://github.com/hulf-observatory/data/blob/main/SCHEME.md):
 
 | What | From |
 |---|---|
@@ -56,7 +56,7 @@ over the test raster, or a missing error card when the catalogue is absent.
 ## Deploy
 
 Push to `main`; GitHub Pages serves the repo root (`.nojekyll` keeps `vendor/` and dotfiles as
-they are). Data updates happen in `hulf-observatory/hyderabad-data`; the page picks up a new
+they are). Data updates happen in `hulf-observatory/data`; the page picks up a new
 `layers.json` on the next visit.
 
 ## Optional: the heritage list

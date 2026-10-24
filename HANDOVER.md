@@ -8,7 +8,7 @@ on the phone). Details and how to run it: `README.md`.
 
 - **Page:** this repo on GitHub Pages, https://timeline.hyderabad.urbanobservatory.in/. Deploy = push
   to `main`. Nothing to install, no server, no nginx, no tile proxy.
-- **Data:** read from the open-data site `hulf-observatory/hyderabad-data` (GitHub Pages for the
+- **Data:** read from the open-data site `hulf-observatory/data` (GitHub Pages for the
   catalogue and small files, GitHub Releases through the `hyd-tiles` Cloudflare Worker for raster
   tiles). The page knows one address, `DATA_BASE`, at the top of its script. Publishing a new data
   release does not need a change here unless the scheme itself changes.

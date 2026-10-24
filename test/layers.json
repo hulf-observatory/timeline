@@ -18,7 +18,7 @@
       "tile_size": 256, "minzoom": 8, "maxzoom": 10,
       "bounds": [78.0, 16.96, 79.05, 17.90], "center": [78.525, 17.43],
       "feature_count": null, "fields": [], "description": "Synthetic raster used to test hosting; not a real map.",
-      "source_name": "Hyderabad Urban Observatory (hosting test)", "source_url": "https://github.com/hulf-observatory/hyderabad-data",
+      "source_name": "Hyderabad Urban Observatory (hosting test)", "source_url": "https://github.com/hulf-observatory/data",
       "attribution": "Hyderabad Urban Observatory", "date": "1908", "licence": "CC BY 4.0",
       "default_visible": false, "style": null, "encoding": null, "display": true, "legend": null, "legend_image": null,
       "download": { "pmtiles": "https://hyd-tiles.hulf-observatory.workers.dev/r/test-0/synthetic_raster.pmtiles" }
@@ -30,7 +30,7 @@
       "tile_size": 256, "minzoom": 8, "maxzoom": 10,
       "bounds": [78.0, 16.96, 79.05, 17.90], "center": [78.525, 17.43],
       "feature_count": null, "fields": [], "description": "Synthetic raster used to test hosting; not a real image.",
-      "source_name": "Hyderabad Urban Observatory (hosting test)", "source_url": "https://github.com/hulf-observatory/hyderabad-data",
+      "source_name": "Hyderabad Urban Observatory (hosting test)", "source_url": "https://github.com/hulf-observatory/data",
       "attribution": "Hyderabad Urban Observatory", "date": "1967", "licence": "CC BY 4.0",
       "default_visible": false, "style": null, "encoding": null, "display": true, "legend": null, "legend_image": null,
       "download": { "pmtiles": "https://hyd-tiles.hulf-observatory.workers.dev/r/test-0/synthetic_raster.pmtiles" }
@@ -42,7 +42,7 @@
       "tile_size": 256, "minzoom": 8, "maxzoom": 10,
       "bounds": [78.0, 16.96, 79.05, 17.90], "center": [78.525, 17.43],
       "feature_count": null, "fields": [], "description": "Synthetic raster used to test hosting; not a real sheet.",
-      "source_name": "Hyderabad Urban Observatory (hosting test)", "source_url": "https://github.com/hulf-observatory/hyderabad-data",
+      "source_name": "Hyderabad Urban Observatory (hosting test)", "source_url": "https://github.com/hulf-observatory/data",
       "attribution": "Hyderabad Urban Observatory", "date": "1975", "licence": "CC BY 4.0",
       "default_visible": false, "style": null, "encoding": null, "display": true, "legend": null, "legend_image": null,
       "download": { "pmtiles": "https://hyd-tiles.hulf-observatory.workers.dev/r/test-0/synthetic_raster.pmtiles" }

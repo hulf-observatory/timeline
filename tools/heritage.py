@@ -5,7 +5,7 @@
 
 Reads the GHMC heritage buildings GeoPackage (read-only) and writes
 [{name, ward, zone, c:[lng,lat]}], sorted by zone then name. The app does not read this file
-from here: it goes into the open-data repository (hulf-observatory/hyderabad-data) as
+from here: it goes into the open-data repository (hulf-observatory/data) as
 `heritage.json` at its root, where the page fetches it from DATA_BASE.
 Names, wards and zones come UPPERCASE in the source; they are title-cased here.
 Only needed when the heritage source changes. Stdlib only (sqlite3 reads the .gpkg).
