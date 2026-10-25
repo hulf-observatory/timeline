@@ -362,7 +362,12 @@ html[data-mode=swipe] .grid, html[data-mode=swipe] .edge, html[data-mode=swipe] 
   border:1px solid var(--border); border-radius:var(--r-ctl); padding:6px; display:grid; }
 .obs-appmenu-card[hidden] { display:none; }
 .obs-appmenu-card a { padding:10px 12px; border-radius:var(--r-ctl); font-size:15px; color:var(--text-2); text-decoration:none; }
-.obs-appmenu-card a:hover { background:var(--surface-2); color:var(--ink); }
+.obs-appmenu-card a:hover { background:var(--surface-2); color:var(--ink); }/* "Live" (the main site's live page): a small pulsing green dot before the word (25 Oct 2026); still for reduced motion */
+.obs-live { display: inline-flex; align-items: center; gap: 6px; }
+.obs-live-dot { position: relative; width: 7px; height: 7px; border-radius: 50%; background: #4A9447; flex: none; }
+.obs-live-dot::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: #4A9447; animation: obs-live-pulse 1.8s ease-out infinite; }
+@keyframes obs-live-pulse { 0% { transform: scale(1); opacity: .6; } 100% { transform: scale(2.8); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .obs-live-dot::after { animation: none; } }
 .obs-appmenu-card .lab { padding:8px 12px 4px; font:900 11px/1.2 var(--font-ui); letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
 </style>
 </head>
@@ -392,6 +397,7 @@ html[data-mode=swipe] .grid, html[data-mode=swipe] .edge, html[data-mode=swipe] 
 <nav class="obs-appmenu-card" id="sitemenu" aria-label="Observatory" hidden>
   <span class="lab">Hyderabad Urban Observatory</span>
   <a href="https://hyderabad.urbanobservatory.in/">Home</a>
+  <a href="https://hyderabad.urbanobservatory.in/live/" class="obs-live"><i class="obs-live-dot" aria-hidden="true"></i>Live</a>
   <a href="https://hyderabad.urbanobservatory.in/maps/">Layers</a>
   <a href="https://hyderabad.urbanobservatory.in/tools/">Tools</a>
   <a href="https://hyderabad.urbanobservatory.in/stories/">Stories</a>
